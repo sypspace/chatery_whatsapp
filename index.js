@@ -135,13 +135,26 @@ app.get('/api/health', (req, res) => {
 app.post('/api/dashboard/login', (req, res) => {
     const { username, password } = req.body;
     
-    const validUsername = process.env.DASHBOARD_USERNAME || 'admin';
-    const validPassword = process.env.DASHBOARD_PASSWORD || 'admin123';
+    if ( 
+        process.env.DASHBOARD_USERNAME === undefined || 
+        process.env.DASHBOARD_USERNAME == '' || 
+        process.env.DASHBOARD_PASSWORD === undefined ||
+        process.env.DASHBOARD_PASSWORD == ''
+    ) {
+        return res.status(500).json({
+            success: false,
+            message: 'Dashboard credentials are not set properly. Please check the server configuration.'
+        });
+    }
+
+    const validUsername = process.env.DASHBOARD_USERNAME;
+    const validPassword = process.env.DASHBOARD_PASSWORD;
     
     if (username === validUsername && password === validPassword) {
         res.json({
             success: true,
-            message: 'Login successful'
+            message: 'Login successful',
+            metadata: { api_key: process.env.API_KEY || '' }
         });
     } else {
         res.status(401).json({
