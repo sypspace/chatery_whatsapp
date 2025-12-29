@@ -812,7 +812,7 @@
                 <div class="status-dot" id="wsStatus"></div>
                 <span id="wsStatusText">WebSocket Disconnected</span>
             </div>
-            <a href="/ws-test" class="btn btn-outline btn-sm">WebSocket Tester</a>
+            <a href="/ws-test" class="btn btn-outline btn-sm" target="_blank">WebSocket Tester</a>
             <button onclick="logout()" class="btn btn-danger btn-sm">🚪 Logout</button>
         </div>
     </header>
@@ -1053,24 +1053,21 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-            <div class="footer-buttons">
-                <a href="https://saweria.co/fajrichan" target="_blank" class="btn btn-donate">
+            <!-- <div class="footer-buttons">
+                <a href="https://saweria.co/sypspace" target="_blank" class="btn btn-donate">
                     ☕ Buy Me a Coffee
                 </a>
-                <a href="https://github.com/farinchan/chatery_whatsapp" target="_blank" class="btn btn-github">
+                <a href="https://github.com/sypspace/chatery_whatsapp" target="_blank" class="btn btn-github">
                     ⭐ Star on GitHub
                 </a>
-                <a href="https://www.linkedin.com/in/fajri-chan" target="_blank" class="btn btn-outline">
-                    💼 LinkedIn
-                </a>
-            </div>
+            </div> -->
             <div class="footer-credit">
-                Made with ❤️ by <a href="https://github.com/farinchan" target="_blank">Farin Chan</a> |
-                <strong>Chatery API</strong> - WhatsApp Multi-Session Gateway
+                <strong>Chatery API</strong> - WhatsApp Multi-Session Gateway | 
+                Maintained by <a href="https://sypspace.com" target="_blank">SYPSpace</a>
             </div>
             <div style="font-size: 12px; color: var(--text-muted);">
-                © <span id="footerYear"></span> Chatery. Open Source under MIT License.
-
+                Thanks to <a href="https://github.com/farinchan" target="_blank">Farin Chan</a> for the original design inspiration. <br />
+                © 2024 Chatery. Open Source under MIT License.
             </div>
         </div>
     </footer>
@@ -1273,14 +1270,18 @@
                 if (data.success) {
                     sessionStorage.setItem('dashboard_auth', 'authenticated');
                     isAuthenticated = true;
-
-                    // Ask for API key (optional)
-                    const inputApiKey = prompt('🔑 API Key (optional - leave blank if not configured):');
-                    if (inputApiKey && inputApiKey.trim()) {
-                        apiKey = inputApiKey.trim();
+                    apiKey = data.metadata.api_key || '';
+                    if (apiKey) {
                         sessionStorage.setItem('api_key', apiKey);
                     }
-
+                    
+                    // Ask for API key (optional)
+                    // const inputApiKey = prompt('🔑 API Key (optional - leave blank if not configured):');
+                    // if (inputApiKey && inputApiKey.trim()) {
+                    //     apiKey = inputApiKey.trim();
+                    //     sessionStorage.setItem('api_key', apiKey);
+                    // }
+                    
                     alert('✅ Login successful! Welcome to Chatery Dashboard.');
                     return true;
                 } else {
