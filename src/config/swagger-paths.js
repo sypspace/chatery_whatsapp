@@ -318,7 +318,7 @@
  *   post:
  *     tags: [Messaging]
  *     summary: Send text message
- *     description: Send a text message to a chat. Optionally reply to a specific message.
+ *     description: Send a text message to a chat. Messages are queued for reliable delivery with optional delay.
  *     requestBody:
  *       required: true
  *       content:
@@ -341,6 +341,21 @@
  *                 type: integer
  *                 example: 2000
  *                 description: Typing indicator duration (ms)
+ *               delay:
+ *                 type: string|integer
+ *                 default: auto
+ *                 example: auto
+ *                 description: "Delay before sending - 'auto' for random 1-15s, numeric for milliseconds, 0 for immediate"
+ *               priority:
+ *                 type: integer
+ *                 description: Job priority (higher = more urgent, optional)
+ *               attempts:
+ *                 type: integer
+ *                 description: Number of retry attempts if job fails (optional)
+ *               skipNumberCheck:
+ *                 type: boolean
+ *                 default: false
+ *                 description: Skip WhatsApp number registration check
  *               replyTo:
  *                 type: string
  *                 example: "3EB0B430A2B52B67D0"
@@ -356,7 +371,7 @@
  *   post:
  *     tags: [Messaging]
  *     summary: Send image message
- *     description: Send an image with optional caption. Optionally reply to a specific message.
+ *     description: Send an image with optional caption. Messages are queued for reliable delivery with optional delay.
  *     requestBody:
  *       required: true
  *       content:
@@ -376,6 +391,21 @@
  *                 type: string
  *               typingTime:
  *                 type: integer
+ *               delay:
+ *                 type: string|integer
+ *                 default: auto
+ *                 example: auto
+ *                 description: "Delay before sending - 'auto' for random 1-15s, numeric for milliseconds, 0 for immediate"
+ *               priority:
+ *                 type: integer
+ *                 description: Job priority (higher = more urgent, optional)
+ *               attempts:
+ *                 type: integer
+ *                 description: Number of retry attempts if job fails (optional)
+ *               skipNumberCheck:
+ *                 type: boolean
+ *                 default: false
+ *                 description: Skip WhatsApp number registration check
  *               replyTo:
  *                 type: string
  *                 example: "3EB0B430A2B52B67D0"
@@ -391,7 +421,7 @@
  *   post:
  *     tags: [Messaging]
  *     summary: Send document
- *     description: Send a document/file. Optionally reply to a specific message.
+ *     description: Send a document/file. Messages are queued for reliable delivery with optional delay.
  *     requestBody:
  *       required: true
  *       content:
@@ -415,6 +445,21 @@
  *                 example: application/pdf
  *               typingTime:
  *                 type: integer
+ *               delay:
+ *                 type: string|integer
+ *                 default: auto
+ *                 example: auto
+ *                 description: "Delay before sending - 'auto' for random 1-15s, numeric for milliseconds, 0 for immediate"
+ *               priority:
+ *                 type: integer
+ *                 description: Job priority (higher = more urgent, optional)
+ *               attempts:
+ *                 type: integer
+ *                 description: Number of retry attempts if job fails (optional)
+ *               skipNumberCheck:
+ *                 type: boolean
+ *                 default: false
+ *                 description: Skip WhatsApp number registration check
  *               replyTo:
  *                 type: string
  *                 example: "3EB0B430A2B52B67D0"
@@ -430,7 +475,7 @@
  *   post:
  *     tags: [Messaging]
  *     summary: Send location
- *     description: Send a location message. Optionally reply to a specific message.
+ *     description: Send a location message. Messages are queued for reliable delivery with optional delay.
  *     requestBody:
  *       required: true
  *       content:
@@ -454,6 +499,21 @@
  *                 example: Jakarta
  *               typingTime:
  *                 type: integer
+ *               delay:
+ *                 type: string|integer
+ *                 default: auto
+ *                 example: auto
+ *                 description: "Delay before sending - 'auto' for random 1-15s, numeric for milliseconds, 0 for immediate"
+ *               priority:
+ *                 type: integer
+ *                 description: Job priority (higher = more urgent, optional)
+ *               attempts:
+ *                 type: integer
+ *                 description: Number of retry attempts if job fails (optional)
+ *               skipNumberCheck:
+ *                 type: boolean
+ *                 default: false
+ *                 description: Skip WhatsApp number registration check
  *               replyTo:
  *                 type: string
  *                 example: "3EB0B430A2B52B67D0"
@@ -469,7 +529,7 @@
  *   post:
  *     tags: [Messaging]
  *     summary: Send contact
- *     description: Send a contact card. Optionally reply to a specific message.
+ *     description: Send a contact card. Messages are queued for reliable delivery with optional delay.
  *     requestBody:
  *       required: true
  *       content:
@@ -490,6 +550,21 @@
  *                 example: "628987654321"
  *               typingTime:
  *                 type: integer
+ *               delay:
+ *                 type: string|integer
+ *                 default: auto
+ *                 example: auto
+ *                 description: "Delay before sending - 'auto' for random 1-15s, numeric for milliseconds, 0 for immediate"
+ *               priority:
+ *                 type: integer
+ *                 description: Job priority (higher = more urgent, optional)
+ *               attempts:
+ *                 type: integer
+ *                 description: Number of retry attempts if job fails (optional)
+ *               skipNumberCheck:
+ *                 type: boolean
+ *                 default: false
+ *                 description: Skip WhatsApp number registration check
  *               replyTo:
  *                 type: string
  *                 example: "3EB0B430A2B52B67D0"
@@ -505,7 +580,7 @@
  *   post:
  *     tags: [Messaging]
  *     summary: Send button message
- *     description: Send a message with interactive buttons. Optionally reply to a specific message.
+ *     description: Send a message with interactive buttons. Messages are queued for reliable delivery with optional delay.
  *     requestBody:
  *       required: true
  *       content:
@@ -534,6 +609,21 @@
  *                       type: string
  *               typingTime:
  *                 type: integer
+ *               delay:
+ *                 type: string|integer
+ *                 default: auto
+ *                 example: auto
+ *                 description: "Delay before sending - 'auto' for random 1-15s, numeric for milliseconds, 0 for immediate"
+ *               priority:
+ *                 type: integer
+ *                 description: Job priority (higher = more urgent, optional)
+ *               attempts:
+ *                 type: integer
+ *                 description: Number of retry attempts if job fails (optional)
+ *               skipNumberCheck:
+ *                 type: boolean
+ *                 default: false
+ *                 description: Skip WhatsApp number registration check
  *               replyTo:
  *                 type: string
  *                 example: "3EB0B430A2B52B67D0"

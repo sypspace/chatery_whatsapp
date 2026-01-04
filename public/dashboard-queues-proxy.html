@@ -12,8 +12,12 @@
   <script>
     (async function(){
       try {
-        // Rely on HttpOnly dashboard_auth cookie for authentication; fetch the monitor at /queue-monitor
-        const resp = await fetch('/queue-monitor');
+        // Try to get API key from localStorage or sessionStorage and include it in header
+        const apiKey = localStorage.getItem('api_key') || sessionStorage.getItem('api_key') || '';
+        const headers = {};
+        if (apiKey) headers['X-Api-Key'] = apiKey;
+
+        const resp = await fetch('/queue-monitor', { headers });
         if (!resp.ok) {
           const text = await resp.text().catch(()=>resp.statusText);
           document.body.innerHTML = '<h3>Failed to load Queues UI: ' + resp.status + ' ' + resp.statusText + '</h3><pre style="white-space:pre-wrap">'+text+'</pre>';

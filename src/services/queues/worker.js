@@ -1,5 +1,6 @@
-const { Queue, Worker, QueueScheduler } = require('bullmq');
+const { Queue, Worker, QueueScheduler, UnrecoverableError } = require('bullmq');
 const whatsappManager = require('../whatsapp');
+const { checkNumberRegistered } = require('../../helpers/whatsappHelpers');
 
 const REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1';
 const REDIS_PORT = Number(process.env.REDIS_PORT) || 6379;
@@ -41,18 +42,49 @@ const worker = new Worker(
         if (!session) throw new Error('Session not found: ' + data.sessionId);
 
         switch (name) {
-            case 'send-text':
-                return await session.sendTextMessage(data.chatId, data.message, data.typingTime || 0);
-            case 'send-image':
-                return await session.sendImage(data.chatId, data.imageUrl, data.caption || '', data.typingTime || 0);
-            case 'send-document':
-                return await session.sendDocument(data.chatId, data.documentUrl, data.filename, data.mimetype, data.typingTime || 0);
-            case 'send-location':
-                return await session.sendLocation(data.chatId, data.latitude, data.longitude, data.name || '', data.typingTime || 0);
-            case 'send-contact':
-                return await session.sendContact(data.chatId, data.contactName, data.contactPhone, data.typingTime || 0);
-            case 'send-button':
-                return await session.sendButton(data.chatId, data.text, data.footer || '', data.buttons || [], data.typingTime || 0);
+                case 'send-text': {
+                    if (!data.skipNumberCheck) {
+                        const ok = await checkNumberRegistered(session, data.chatId);
+                        if (!ok) throw new UnrecoverableError('Phone number is not registered on WhatsApp');
+                    }
+                    return await session.sendTextMessage(data.chatId, data.message, data.typingTime || 0);
+                }
+                case 'send-image': {
+                    if (!data.skipNumberCheck) {
+                        const ok = await checkNumberRegistered(session, data.chatId);
+                        if (!ok) throw new UnrecoverableError('Phone number is not registered on WhatsApp');
+                    }
+                    return await session.sendImage(data.chatId, data.imageUrl, data.caption || '', data.typingTime || 0);
+                }
+                case 'send-document': {
+                    if (!data.skipNumberCheck) {
+                        const ok = await checkNumberRegistered(session, data.chatId);
+                        if (!ok) throw new UnrecoverableError('Phone number is not registered on WhatsApp');
+                    }
+                    return await session.sendDocument(data.chatId, data.documentUrl, data.filename, data.mimetype, data.typingTime || 0);
+                }
+                case 'send-location': {
+                    if (!data.skipNumberCheck) {
+                        const ok = await checkNumberRegistered(session, data.chatId);
+                        if (!ok) throw new UnrecoverableError('Phone number is not registered on WhatsApp');
+                    }
+                    return await session.sendLocation(data.chatId, data.latitude, data.longitude, data.name || '', data.typingTime || 0);
+                }
+                case 'send-contact': {
+                    const target = data.contactPhone || data.chatId;
+                    if (!data.skipNumberCheck) {
+                        const ok = await checkNumberRegistered(session, target);
+                        if (!ok) throw new UnrecoverableError('Phone number is not registered on WhatsApp');
+                    }
+                    return await session.sendContact(data.chatId, data.contactName, data.contactPhone, data.typingTime || 0);
+                }
+                case 'send-button': {
+                    if (!data.skipNumberCheck) {
+                        const ok = await checkNumberRegistered(session, data.chatId);
+                        if (!ok) throw new UnrecoverableError('Phone number is not registered on WhatsApp');
+                    }
+                    return await session.sendButton(data.chatId, data.text, data.footer || '', data.buttons || [], data.typingTime || 0);
+                }
             default:
                 throw new Error('Unknown job name: ' + name);
         }

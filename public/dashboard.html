@@ -1068,7 +1068,7 @@
             </div>
             <div style="font-size: 12px; color: var(--text-muted);">
                 Thanks to <a href="https://github.com/farinchan" target="_blank">Farin Chan</a> for the original design inspiration. <br />
-                © 2024 Chatery. Open Source under MIT License.
+                © <span id="footerYear"></span> Chatery. Open Source under MIT License.
             </div>
         </div>
     </footer>
@@ -1689,7 +1689,7 @@
             } else {
                 sessionIdGroup.style.display = 'none';
             }
-
+            
             // Show/hide job ID input for URL params
             if (path.includes('{jobId}')) {
                 jobIdGroup.style.display = 'block';
@@ -1745,9 +1745,13 @@
                     chatId: '628123456789',
                     message: 'Hello from Chatery API!',
                     typingTime: 0,
+                    delay: 'auto',
+                    priority: undefined,
+                    attempts: undefined,
+                    skipNumberCheck: false,
                     replyTo: null
                 };
-                helpText = '📝 <code>chatId</code>: Phone number or group ID. <code>typingTime</code>: Typing duration in ms. <code>replyTo</code>: Message ID to reply to (optional, set null to disable).';
+                helpText = '📝 <code>chatId</code>: Phone number or group ID.<br><code>delay</code>: "auto" (random 1-15s), numeric milliseconds, or 0 (immediate).<br><code>priority</code>: Job priority (optional).<br><code>attempts</code>: Retry count (optional).<br><code>skipNumberCheck</code>: Skip WhatsApp registration check.<br><code>typingTime</code>: Typing indicator duration in ms.<br><code>replyTo</code>: Message ID to reply to.';
             } else if (path.includes('/chats/send-image')) {
                 body = {
                     sessionId: '',
@@ -1755,9 +1759,13 @@
                     imageUrl: 'https://example.com/image.jpg',
                     caption: 'Image caption',
                     typingTime: 0,
+                    delay: 'auto',
+                    priority: undefined,
+                    attempts: undefined,
+                    skipNumberCheck: false,
                     replyTo: null
                 };
-                helpText = '🖼️ <code>imageUrl</code>: Direct URL to image. <code>typingTime</code>: Typing duration in ms. <code>replyTo</code>: Message ID to reply to (optional).';
+                helpText = '🖼️ <code>imageUrl</code>: Direct URL to image.<br><code>delay</code>: "auto" (random 1-15s), numeric milliseconds, or 0 (immediate).<br><code>priority</code>: Job priority (optional).<br><code>attempts</code>: Retry count (optional).<br><code>skipNumberCheck</code>: Skip WhatsApp registration check.<br><code>typingTime</code>: Typing indicator duration in ms.<br><code>replyTo</code>: Message ID to reply to.';
             } else if (path.includes('/chats/send-document')) {
                 body = {
                     sessionId: '',
@@ -1766,9 +1774,13 @@
                     filename: 'document.pdf',
                     mimetype: 'application/pdf',
                     typingTime: 0,
+                    delay: 'auto',
+                    priority: undefined,
+                    attempts: undefined,
+                    skipNumberCheck: false,
                     replyTo: null
                 };
-                helpText = '📄 <code>mimetype</code>: MIME type. <code>typingTime</code>: Typing duration in ms. <code>replyTo</code>: Message ID to reply to (optional).';
+                helpText = '📄 <code>documentUrl</code>: Direct URL to document.<br><code>filename</code>: Filename with extension.<br><code>mimetype</code>: MIME type (optional).<br><code>delay</code>: "auto" (random 1-15s), numeric milliseconds, or 0 (immediate).<br><code>priority</code>: Job priority (optional).<br><code>attempts</code>: Retry count (optional).<br><code>skipNumberCheck</code>: Skip WhatsApp registration check.<br><code>typingTime</code>: Typing indicator duration in ms.';
             } else if (path.includes('/chats/send-location')) {
                 body = {
                     sessionId: '',
@@ -1777,9 +1789,13 @@
                     longitude: 106.8456,
                     name: 'Jakarta, Indonesia',
                     typingTime: 0,
+                    delay: 'auto',
+                    priority: undefined,
+                    attempts: undefined,
+                    skipNumberCheck: false,
                     replyTo: null
                 };
-                helpText = '📍 GPS coordinates. <code>replyTo</code>: Message ID to reply to (optional).';
+                helpText = '📍 <code>latitude/longitude</code>: GPS coordinates.<br><code>name</code>: Location name (optional).<br><code>delay</code>: "auto" (random 1-15s), numeric milliseconds, or 0 (immediate).<br><code>priority</code>: Job priority (optional).<br><code>attempts</code>: Retry count (optional).<br><code>skipNumberCheck</code>: Skip WhatsApp registration check.<br><code>typingTime</code>: Typing indicator duration in ms.';
             } else if (path.includes('/chats/send-contact')) {
                 body = {
                     sessionId: '',
@@ -1787,9 +1803,13 @@
                     contactName: 'John Doe',
                     contactPhone: '628987654321',
                     typingTime: 0,
+                    delay: 'auto',
+                    priority: undefined,
+                    attempts: undefined,
+                    skipNumberCheck: false,
                     replyTo: null
                 };
-                helpText = '👤 <code>contactPhone</code>: Contact phone number. <code>replyTo</code>: Message ID to reply to (optional).';
+                helpText = '👤 <code>contactName</code>: Contact name.<br><code>contactPhone</code>: Contact phone number.<br><code>delay</code>: "auto" (random 1-15s), numeric milliseconds, or 0 (immediate).<br><code>priority</code>: Job priority (optional).<br><code>attempts</code>: Retry count (optional).<br><code>skipNumberCheck</code>: Skip WhatsApp registration check.<br><code>typingTime</code>: Typing indicator duration in ms.';
             } else if (path.includes('/chats/send-button')) {
                 body = {
                     sessionId: '',
@@ -1798,9 +1818,13 @@
                     footer: 'Powered by Chatery',
                     buttons: ['Option 1', 'Option 2', 'Option 3'],
                     typingTime: 0,
+                    delay: 'auto',
+                    priority: undefined,
+                    attempts: undefined,
+                    skipNumberCheck: false,
                     replyTo: null
                 };
-                helpText = '🔘 <code>buttons</code>: Max 3 buttons. <code>replyTo</code>: Message ID to reply to (optional).';
+                helpText = '🔘 <code>text</code>: Button message text.<br><code>buttons</code>: Max 3 button labels (array).<br><code>footer</code>: Optional footer text.<br><code>delay</code>: "auto" (random 1-15s), numeric milliseconds, or 0 (immediate).<br><code>priority</code>: Job priority (optional).<br><code>attempts</code>: Retry count (optional).<br><code>skipNumberCheck</code>: Skip WhatsApp registration check.<br><code>typingTime</code>: Typing indicator duration in ms.';
             } else if (path.includes('/chats/presence')) {
                 body = {
                     sessionId: '',

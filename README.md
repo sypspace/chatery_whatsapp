@@ -253,17 +253,17 @@ Dashboard requires login with username and password configured in `.env` file.
 
 ### ✨ Dashboard Features
 
-| Feature | Description |
-|---------|-------------|
-| 📊 **Real-time Stats** | Monitor total sessions, connected/disconnected status, and WebSocket clients |
-| 📱 **Session Management** | Create, connect, reconnect, and delete WhatsApp sessions |
-| 📷 **QR Code Scanner** | Scan QR codes directly from the dashboard |
-| 📡 **Live Events** | Real-time WebSocket event viewer with filtering |
-| 💬 **Quick Send** | Send messages quickly to any number |
-| 🧪 **API Tester** | Test all 40+ API endpoints with pre-filled templates |
-| 📤 **Bulk Messaging** | Send messages to multiple recipients with job tracking |
-| 🔗 **Webhook Manager** | Add, remove, and configure webhooks per session |
-| 🚪 **Logout** | Secure logout button in header |
+| Feature                   | Description                                                                  |
+| ------------------------- | ---------------------------------------------------------------------------- |
+| 📊 **Real-time Stats**    | Monitor total sessions, connected/disconnected status, and WebSocket clients |
+| 📱 **Session Management** | Create, connect, reconnect, and delete WhatsApp sessions                     |
+| 📷 **QR Code Scanner**    | Scan QR codes directly from the dashboard                                    |
+| 📡 **Live Events**        | Real-time WebSocket event viewer with filtering                              |
+| 💬 **Quick Send**         | Send messages quickly to any number                                          |
+| 🧪 **API Tester**         | Test all 40+ API endpoints with pre-filled templates                         |
+| 📤 **Bulk Messaging**     | Send messages to multiple recipients with job tracking                       |
+| 🔗 **Webhook Manager**    | Add, remove, and configure webhooks per session                              |
+| 🚪 **Logout**             | Secure logout button in header                                               |
 
 ### 📸 Screenshots
 
@@ -688,11 +688,13 @@ Bulk messaging runs in the background and returns immediately with a job ID. You
 > **⚡ Background Processing**: All bulk endpoints return immediately with a `jobId`. Messages are sent in background to avoid request timeouts. Track progress with the status endpoint.
 
 #### Send Bulk Text Message
+
 ```http
 POST /chats/send-bulk
 ```
 
 **Body:**
+
 ```json
 {
   "sessionId": "mysession",
@@ -703,15 +705,16 @@ POST /chats/send-bulk
 }
 ```
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `sessionId` | string | Required. Session ID |
-| `recipients` | array | Required. Array of phone numbers (max 100) |
-| `message` | string | Required. Text message to send |
+| Parameter              | Type   | Description                                            |
+| ---------------------- | ------ | ------------------------------------------------------ |
+| `sessionId`            | string | Required. Session ID                                   |
+| `recipients`           | array  | Required. Array of phone numbers (max 100)             |
+| `message`              | string | Required. Text message to send                         |
 | `delayBetweenMessages` | number | Optional. Delay between messages in ms (default: 1000) |
-| `typingTime` | number | Optional. Typing indicator duration in ms (default: 0) |
+| `typingTime`           | number | Optional. Typing indicator duration in ms (default: 0) |
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -725,11 +728,13 @@ POST /chats/send-bulk
 ```
 
 #### Send Bulk Image
+
 ```http
 POST /chats/send-bulk-image
 ```
 
 **Body:**
+
 ```json
 {
   "sessionId": "mysession",
@@ -741,21 +746,23 @@ POST /chats/send-bulk-image
 }
 ```
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `sessionId` | string | Required. Session ID |
-| `recipients` | array | Required. Array of phone numbers (max 100) |
-| `imageUrl` | string | Required. Direct URL to image file |
-| `caption` | string | Optional. Image caption |
+| Parameter              | Type   | Description                                            |
+| ---------------------- | ------ | ------------------------------------------------------ |
+| `sessionId`            | string | Required. Session ID                                   |
+| `recipients`           | array  | Required. Array of phone numbers (max 100)             |
+| `imageUrl`             | string | Required. Direct URL to image file                     |
+| `caption`              | string | Optional. Image caption                                |
 | `delayBetweenMessages` | number | Optional. Delay between messages in ms (default: 1000) |
-| `typingTime` | number | Optional. Typing indicator duration in ms (default: 0) |
+| `typingTime`           | number | Optional. Typing indicator duration in ms (default: 0) |
 
 #### Send Bulk Document
+
 ```http
 POST /chats/send-bulk-document
 ```
 
 **Body:**
+
 ```json
 {
   "sessionId": "mysession",
@@ -768,22 +775,24 @@ POST /chats/send-bulk-document
 }
 ```
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `sessionId` | string | Required. Session ID |
-| `recipients` | array | Required. Array of phone numbers (max 100) |
-| `documentUrl` | string | Required. Direct URL to document |
-| `filename` | string | Required. Filename to display |
-| `mimetype` | string | Optional. MIME type (default: application/pdf) |
+| Parameter              | Type   | Description                                            |
+| ---------------------- | ------ | ------------------------------------------------------ |
+| `sessionId`            | string | Required. Session ID                                   |
+| `recipients`           | array  | Required. Array of phone numbers (max 100)             |
+| `documentUrl`          | string | Required. Direct URL to document                       |
+| `filename`             | string | Required. Filename to display                          |
+| `mimetype`             | string | Optional. MIME type (default: application/pdf)         |
 | `delayBetweenMessages` | number | Optional. Delay between messages in ms (default: 1000) |
-| `typingTime` | number | Optional. Typing indicator duration in ms (default: 0) |
+| `typingTime`           | number | Optional. Typing indicator duration in ms (default: 0) |
 
 #### Get Bulk Job Status
+
 ```http
 GET /chats/bulk-status/:jobId
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -815,20 +824,22 @@ GET /chats/bulk-status/:jobId
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `status` | string | `processing` or `completed` |
-| `progress` | number | Progress percentage (0-100) |
-| `sent` | number | Successfully sent count |
-| `failed` | number | Failed count |
-| `details` | array | Per-recipient status with timestamps |
+| Field      | Type   | Description                          |
+| ---------- | ------ | ------------------------------------ |
+| `status`   | string | `processing` or `completed`          |
+| `progress` | number | Progress percentage (0-100)          |
+| `sent`     | number | Successfully sent count              |
+| `failed`   | number | Failed count                         |
+| `details`  | array  | Per-recipient status with timestamps |
 
 #### Get All Bulk Jobs
+
 ```http
 POST /chats/bulk-jobs
 ```
 
 **Body:**
+
 ```json
 {
   "sessionId": "mysession"
@@ -836,6 +847,7 @@ POST /chats/bulk-jobs
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -1603,15 +1615,16 @@ Your support helps me maintain and improve this project! ❤️
 
 ## 🔗 Quick Links
 
-| Resource | URL |
-|----------|-----|
-| 📄 Swagger UI (API Docs) | http://localhost:3000 |
-| 🎛️ Dashboard | http://localhost:3000/dashboard |
-| 📚 API Base URL | http://localhost:3000/api/whatsapp |
-| 🔌 WebSocket Test | http://localhost:3000/ws-test |
-| 📊 WebSocket Stats | http://localhost:3000/api/websocket/stats |
-| ❤️ Health Check | http://localhost:3000/api/health |
-| 📋 OpenAPI JSON | http://localhost:3000/api-docs.json |
+| Resource                 | URL                                       |
+| ------------------------ | ----------------------------------------- |
+| 📄 Swagger UI (API Docs) | http://localhost:3000                     |
+| 🎛️ Dashboard             | http://localhost:3000/dashboard           |
+| 📚 API Base URL          | http://localhost:3000/api/whatsapp        |
+| 🔌 WebSocket Test        | http://localhost:3000/ws-test             |
+| 📊 WebSocket Stats       | http://localhost:3000/api/websocket/stats |
+| 🎯 Monitoring Queue      | http://localhost:3000/queue-monitor       |
+| ❤️ Health Check          | http://localhost:3000/api/health          |
+| 📋 OpenAPI JSON          | http://localhost:3000/api-docs.json       |
 
 ---
 
