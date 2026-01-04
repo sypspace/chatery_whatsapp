@@ -117,6 +117,14 @@ app.get('/api/websocket/stats', (req, res) => {
 // WhatsApp Routes (with API Key Authentication)
 app.use('/api/whatsapp', apiKeyAuth, whatsappRoutes);
 
+// Bull Board monitoring UI for queues (protected by API key)
+try {
+    const queuesMonitor = require('./src/services/queues/monitor');
+    app.use('/queues', apiKeyAuth, queuesMonitor);
+} catch (err) {
+    console.warn('Bull Board monitor not available:', err.message);
+}
+
 // 404 Handler
 app.use((req, res) => {
     res.status(404).json({

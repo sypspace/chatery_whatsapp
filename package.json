@@ -23,6 +23,8 @@
   "homepage": "https://github.com/farinchan/chatery_whatsapp#readme",
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc.9",
+    "@bull-board/express": "^4.0.0",
+    "@bull-board/api": "^4.0.0",
     "bullmq": "^1.91.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
