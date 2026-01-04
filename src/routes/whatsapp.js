@@ -1066,3 +1066,35 @@ router.post('/groups/revoke-invite', checkSession, async (req, res) => {
 });
 
 module.exports = router;
+
+// Job status endpoint
+// GET /jobs/:jobId
+router.get('/jobs/:jobId', async (req, res) => {
+    try {
+        const { jobId } = req.params;
+        if (!jobId) {
+            return res.status(400).json({ success: false, message: 'Missing required param: jobId' });
+        }
+
+        const job = await queue.getJob(jobId);
+        if (!job) {
+            return res.status(404).json({ success: false, message: 'Job not found' });
+        }
+
+        const state = await job.getState();
+        const result = {
+            id: job.id,
+            name: job.name,
+            data: job.data,
+            state,
+            attemptsMade: job.attemptsMade,
+            failedReason: job.failedReason || null,
+            returnValue: job.returnvalue || null,
+            timestamp: job.timestamp
+        };
+
+        res.json({ success: true, message: 'Job status retrieved', data: result });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
