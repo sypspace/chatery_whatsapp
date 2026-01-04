@@ -131,6 +131,43 @@ DASHBOARD_PASSWORD=securepassword123
 API_KEY=your_secret_api_key_here
 ```
 
+## 🧰 Message Queue (BullMQ)
+
+This project uses BullMQ to queue outgoing messages so you can apply delays, rate limits, and retries.
+
+Requirements:
+
+- Redis server available (default: localhost:6379).
+
+Environment variables (optional):
+
+- `REDIS_HOST` (default: `127.0.0.1`)
+- `REDIS_PORT` (default: `6379`)
+- `MESSAGE_QUEUE_NAME` (default: `message-queue`)
+- `QUEUE_CONCURRENCY` (default: `5`) — number of concurrent worker jobs
+- `RATE_LIMIT_MAX` (default: `20`) — max jobs per duration
+- `RATE_LIMIT_DURATION` (default: `1000`) — duration in ms for rate limiting
+
+Example: send a text message with a 5 second delay and high priority
+
+```bash
+curl -X POST http://localhost:3000/api/whatsapp/chats/send-text \
+  -H "X-Api-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"sessionId":"mysession","chatId":"628123456789","message":"Hello after delay","delay":5000,"priority":1}'
+```
+
+Check job status:
+
+```bash
+curl -X GET http://localhost:3000/api/whatsapp/jobs/<jobId> -H "X-Api-Key: your_api_key"
+```
+
+Notes:
+
+- Jobs return immediately with `jobId`. Use the job status endpoint to poll for completion or failures.
+- Ensure Redis is running before starting the app: `redis-server` (default port 6379).
+
 ## 🔐 API Key Authentication
 
 All WhatsApp API endpoints are protected with API key authentication. Include the `X-Api-Key` header in your requests.

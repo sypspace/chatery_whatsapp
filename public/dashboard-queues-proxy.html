@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Queues - Loading...</title>
+  <style>body{background:#0a0a0a;color:#fff;font-family:Inter,sans-serif;padding:20px}</style>
+</head>
+<body>
+  <h3>Loading Queues UI...</h3>
+  <p>If loading hangs, ensure you are logged in to the dashboard.</p>
+  <script>
+    (async function(){
+      try {
+        // Rely on HttpOnly dashboard_auth cookie for authentication; fetch the monitor at /queue-monitor
+        const resp = await fetch('/queue-monitor');
+        if (!resp.ok) {
+          const text = await resp.text().catch(()=>resp.statusText);
+          document.body.innerHTML = '<h3>Failed to load Queues UI: ' + resp.status + ' ' + resp.statusText + '</h3><pre style="white-space:pre-wrap">'+text+'</pre>';
+          return;
+        }
+
+        let html = await resp.text();
+        // Ensure relative paths resolve to /queue-monitor
+        html = html.replace(/<head>/i, '<head>\n<base href="/queue-monitor/">');
+
+        // Replace document with fetched UI
+        document.open();
+        document.write(html);
+        document.close();
+      } catch (err) {
+        document.body.innerHTML = '<h3>Error loading Queues UI</h3><pre>'+err.message+'</pre>';
+      }
+    })();
+  </script>
+</body>
+</html>

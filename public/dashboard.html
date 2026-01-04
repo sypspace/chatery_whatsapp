@@ -813,6 +813,7 @@
                 <span id="wsStatusText">WebSocket Disconnected</span>
             </div>
             <a href="/ws-test" class="btn btn-outline btn-sm" target="_blank">WebSocket Tester</a>
+                <button onclick="openQueuesUI()" class="btn btn-outline btn-sm">Queues</button>
             <button onclick="logout()" class="btn btn-danger btn-sm">🚪 Logout</button>
         </div>
     </header>
@@ -1273,6 +1274,8 @@
                     apiKey = data.metadata.api_key || '';
                     if (apiKey) {
                         sessionStorage.setItem('api_key', apiKey);
+                        // also persist to localStorage so new windows can read it
+                        localStorage.setItem('api_key', apiKey);
                     }
                     
                     // Ask for API key (optional)
@@ -1298,6 +1301,7 @@
         function logout() {
             sessionStorage.removeItem('dashboard_auth');
             sessionStorage.removeItem('api_key');
+            localStorage.removeItem('api_key');
             apiKey = '';
             isAuthenticated = false;
             alert('👋 Logged out successfully');
@@ -1323,6 +1327,12 @@
                 loadWsStats();
             }, 30000);
         });
+
+        // Open Queues UI via proxy that attaches API key header
+        function openQueuesUI() {
+            // Open proxy page in a new window; proxy will fetch /queue-monitor with header
+            window.open('/dashboard/queue-monitor', '_blank');
+        }
 
         // WebSocket Connection
         function connectWebSocket() {
