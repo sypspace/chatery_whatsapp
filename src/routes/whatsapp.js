@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const whatsappManager = require('../services/whatsapp');
+const { queue } = require('../services/queues');
 
 // Get all sessions
 router.get('/sessions', (req, res) => {
@@ -332,135 +333,180 @@ const checkSession = (req, res, next) => {
     next();
 };
 
-// Send text message
+// Send text message (enqueue)
 router.post('/chats/send-text', checkSession, async (req, res) => {
     try {
-        const { chatId, message, typingTime = 0 } = req.body;
-        
+        const { chatId, message, typingTime = 0, delay, priority, attempts } = req.body;
+
         if (!chatId || !message) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing required fields: chatId, message'
-            });
+            return res.status(400).json({ success: false, message: 'Missing required fields: chatId, message' });
         }
 
-        const result = await req.session.sendTextMessage(chatId, message, typingTime);
-        res.json(result);
+        const jobData = {
+            sessionId: req.body.sessionId,
+            chatId,
+            message,
+            typingTime
+        };
+
+        const jobOptions = {};
+        if (delay) jobOptions.delay = Number(delay);
+        if (priority) jobOptions.priority = priority;
+        if (attempts) jobOptions.attempts = Number(attempts);
+
+        const job = await queue.add('send-text', jobData, jobOptions);
+
+        res.status(202).json({ success: true, message: 'Message queued', jobId: job.id });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Send image
+// Send image (enqueue)
 router.post('/chats/send-image', checkSession, async (req, res) => {
     try {
-        const { chatId, imageUrl, caption, typingTime = 0 } = req.body;
-        
+        const { chatId, imageUrl, caption, typingTime = 0, delay, priority, attempts } = req.body;
+
         if (!chatId || !imageUrl) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing required fields: chatId, imageUrl'
-            });
+            return res.status(400).json({ success: false, message: 'Missing required fields: chatId, imageUrl' });
         }
 
-        const result = await req.session.sendImage(chatId, imageUrl, caption || '', typingTime);
-        res.json(result);
+        const jobData = {
+            sessionId: req.body.sessionId,
+            chatId,
+            imageUrl,
+            caption: caption || '',
+            typingTime
+        };
+
+        const jobOptions = {};
+        if (delay) jobOptions.delay = Number(delay);
+        if (priority) jobOptions.priority = priority;
+        if (attempts) jobOptions.attempts = Number(attempts);
+
+        const job = await queue.add('send-image', jobData, jobOptions);
+        res.status(202).json({ success: true, message: 'Image queued', jobId: job.id });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Send document
+// Send document (enqueue)
 router.post('/chats/send-document', checkSession, async (req, res) => {
     try {
-        const { chatId, documentUrl, filename, mimetype, typingTime = 0 } = req.body;
-        
+        const { chatId, documentUrl, filename, mimetype, typingTime = 0, delay, priority, attempts } = req.body;
+
         if (!chatId || !documentUrl || !filename) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing required fields: chatId, documentUrl, filename'
-            });
+            return res.status(400).json({ success: false, message: 'Missing required fields: chatId, documentUrl, filename' });
         }
 
-        const result = await req.session.sendDocument(chatId, documentUrl, filename, mimetype, typingTime);
-        res.json(result);
+        const jobData = {
+            sessionId: req.body.sessionId,
+            chatId,
+            documentUrl,
+            filename,
+            mimetype,
+            typingTime
+        };
+
+        const jobOptions = {};
+        if (delay) jobOptions.delay = Number(delay);
+        if (priority) jobOptions.priority = priority;
+        if (attempts) jobOptions.attempts = Number(attempts);
+
+        const job = await queue.add('send-document', jobData, jobOptions);
+        res.status(202).json({ success: true, message: 'Document queued', jobId: job.id });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Send location
+// Send location (enqueue)
 router.post('/chats/send-location', checkSession, async (req, res) => {
     try {
-        const { chatId, latitude, longitude, name, typingTime = 0 } = req.body;
-        
+        const { chatId, latitude, longitude, name, typingTime = 0, delay, priority, attempts } = req.body;
+
         if (!chatId || latitude === undefined || longitude === undefined) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing required fields: chatId, latitude, longitude'
-            });
+            return res.status(400).json({ success: false, message: 'Missing required fields: chatId, latitude, longitude' });
         }
 
-        const result = await req.session.sendLocation(chatId, latitude, longitude, name || '', typingTime);
-        res.json(result);
+        const jobData = {
+            sessionId: req.body.sessionId,
+            chatId,
+            latitude,
+            longitude,
+            name: name || '',
+            typingTime
+        };
+
+        const jobOptions = {};
+        if (delay) jobOptions.delay = Number(delay);
+        if (priority) jobOptions.priority = priority;
+        if (attempts) jobOptions.attempts = Number(attempts);
+
+        const job = await queue.add('send-location', jobData, jobOptions);
+        res.status(202).json({ success: true, message: 'Location queued', jobId: job.id });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Send contact
+// Send contact (enqueue)
 router.post('/chats/send-contact', checkSession, async (req, res) => {
     try {
-        const { chatId, contactName, contactPhone, typingTime = 0 } = req.body;
-        
+        const { chatId, contactName, contactPhone, typingTime = 0, delay, priority, attempts } = req.body;
+
         if (!chatId || !contactName || !contactPhone) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing required fields: chatId, contactName, contactPhone'
-            });
+            return res.status(400).json({ success: false, message: 'Missing required fields: chatId, contactName, contactPhone' });
         }
 
-        const result = await req.session.sendContact(chatId, contactName, contactPhone, typingTime);
-        res.json(result);
+        const jobData = {
+            sessionId: req.body.sessionId,
+            chatId,
+            contactName,
+            contactPhone,
+            typingTime
+        };
+
+        const jobOptions = {};
+        if (delay) jobOptions.delay = Number(delay);
+        if (priority) jobOptions.priority = priority;
+        if (attempts) jobOptions.attempts = Number(attempts);
+
+        const job = await queue.add('send-contact', jobData, jobOptions);
+        res.status(202).json({ success: true, message: 'Contact queued', jobId: job.id });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Send button message
+// Send button message (enqueue)
 router.post('/chats/send-button', checkSession, async (req, res) => {
     try {
-        const { chatId, text, footer, buttons, typingTime = 0 } = req.body;
-        
+        const { chatId, text, footer, buttons, typingTime = 0, delay, priority, attempts } = req.body;
+
         if (!chatId || !text || !buttons || !Array.isArray(buttons)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing required fields: chatId, text, buttons (array)'
-            });
+            return res.status(400).json({ success: false, message: 'Missing required fields: chatId, text, buttons (array)' });
         }
 
-        const result = await req.session.sendButton(chatId, text, footer || '', buttons, typingTime);
-        res.json(result);
+        const jobData = {
+            sessionId: req.body.sessionId,
+            chatId,
+            text,
+            footer: footer || '',
+            buttons,
+            typingTime
+        };
+
+        const jobOptions = {};
+        if (delay) jobOptions.delay = Number(delay);
+        if (priority) jobOptions.priority = priority;
+        if (attempts) jobOptions.attempts = Number(attempts);
+
+        const job = await queue.add('send-button', jobData, jobOptions);
+        res.status(202).json({ success: true, message: 'Button message queued', jobId: job.id });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
