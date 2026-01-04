@@ -2,25 +2,7 @@ const express = require('express');
 const router = express.Router();
 const whatsappManager = require('../services/whatsapp');
 const { queue } = require('../services/queues');
-
-// Helper: resolve delay option
-const resolveDelay = (delay) => {
-    // If explicitly 0 or '0', return 0
-    if (delay === 0 || delay === '0') return 0;
-
-    // If not provided or set to 'auto', pick random 1-15 seconds
-    if (delay === undefined || delay === null || delay === 'auto' || delay === '') {
-        const secs = Math.floor(Math.random() * 15) + 1; // 1..15
-        return secs * 1000;
-    }
-
-    const n = Number(delay);
-    if (Number.isFinite(n) && n >= 0) return Math.round(n);
-
-    // Fallback to random 1-15s
-    const secs = Math.floor(Math.random() * 15) + 1;
-    return secs * 1000;
-};
+const { resolveDelay, isGroupChat, checkNumberRegistered, generateJobId } = require('../helpers/whatsappHelpers');
 
 // Get all sessions
 router.get('/sessions', (req, res) => {
@@ -370,10 +352,15 @@ const checkSession = (req, res, next) => {
 // Send text message (enqueue)
 router.post('/chats/send-text', checkSession, async (req, res) => {
     try {
-        const { chatId, message, typingTime = 10, replyTo = null, delay = 'auto', priority, attempts } = req.body;
+        const { chatId, message, typingTime = 10, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = false } = req.body;
 
         if (!chatId || !message) {
             return res.status(400).json({ success: false, message: 'Missing required fields: chatId, message' });
+        }
+
+        if (!skipNumberCheck) {
+            const ok = await checkNumberRegistered(req.session, chatId);
+            if (!ok) return res.status(400).json({ success: false, message: 'Phone number is not registered on WhatsApp' });
         }
 
         const jobData = {
@@ -400,10 +387,15 @@ router.post('/chats/send-text', checkSession, async (req, res) => {
 // Send image (enqueue)
 router.post('/chats/send-image', checkSession, async (req, res) => {
     try {
-        const { chatId, imageUrl, caption, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts } = req.body;
+        const { chatId, imageUrl, caption, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = false } = req.body;
 
         if (!chatId || !imageUrl) {
             return res.status(400).json({ success: false, message: 'Missing required fields: chatId, imageUrl' });
+        }
+
+        if (!skipNumberCheck) {
+            const ok = await checkNumberRegistered(req.session, chatId);
+            if (!ok) return res.status(400).json({ success: false, message: 'Phone number is not registered on WhatsApp' });
         }
 
         const jobData = {
@@ -430,10 +422,15 @@ router.post('/chats/send-image', checkSession, async (req, res) => {
 // Send document (enqueue)
 router.post('/chats/send-document', checkSession, async (req, res) => {
     try {
-        const { chatId, documentUrl, filename, mimetype, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts } = req.body;
+        const { chatId, documentUrl, filename, mimetype, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = false } = req.body;
 
         if (!chatId || !documentUrl || !filename) {
             return res.status(400).json({ success: false, message: 'Missing required fields: chatId, documentUrl, filename' });
+        }
+
+        if (!skipNumberCheck) {
+            const ok = await checkNumberRegistered(req.session, chatId);
+            if (!ok) return res.status(400).json({ success: false, message: 'Phone number is not registered on WhatsApp' });
         }
 
         const jobData = {
@@ -461,10 +458,15 @@ router.post('/chats/send-document', checkSession, async (req, res) => {
 // Send location (enqueue)
 router.post('/chats/send-location', checkSession, async (req, res) => {
     try {
-        const { chatId, latitude, longitude, name, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts } = req.body;
+        const { chatId, latitude, longitude, name, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = false } = req.body;
 
         if (!chatId || latitude === undefined || longitude === undefined) {
             return res.status(400).json({ success: false, message: 'Missing required fields: chatId, latitude, longitude' });
+        }
+
+        if (!skipNumberCheck) {
+            const ok = await checkNumberRegistered(req.session, chatId);
+            if (!ok) return res.status(400).json({ success: false, message: 'Phone number is not registered on WhatsApp' });
         }
 
         const jobData = {
@@ -492,10 +494,16 @@ router.post('/chats/send-location', checkSession, async (req, res) => {
 // Send contact (enqueue)
 router.post('/chats/send-contact', checkSession, async (req, res) => {
     try {
-        const { chatId, contactName, contactPhone, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts } = req.body;
+        const { chatId, contactName, contactPhone, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = false } = req.body;
 
         if (!chatId || !contactName || !contactPhone) {
             return res.status(400).json({ success: false, message: 'Missing required fields: chatId, contactName, contactPhone' });
+        }
+
+        if (!skipNumberCheck) {
+            const target = contactPhone || chatId;
+            const ok = await checkNumberRegistered(req.session, target);
+            if (!ok) return res.status(400).json({ success: false, message: 'Phone number is not registered on WhatsApp' });
         }
 
         const jobData = {
@@ -522,10 +530,15 @@ router.post('/chats/send-contact', checkSession, async (req, res) => {
 // Send button message (enqueue)
 router.post('/chats/send-button', checkSession, async (req, res) => {
     try {
-        const { chatId, text, footer, buttons, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts } = req.body;
+        const { chatId, text, footer, buttons, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = false } = req.body;
 
         if (!chatId || !text || !buttons || !Array.isArray(buttons)) {
             return res.status(400).json({ success: false, message: 'Missing required fields: chatId, text, buttons (array)' });
+        }
+
+        if (!skipNumberCheck) {
+            const ok = await checkNumberRegistered(req.session, chatId);
+            if (!ok) return res.status(400).json({ success: false, message: 'Phone number is not registered on WhatsApp' });
         }
 
         const jobData = {
@@ -555,10 +568,7 @@ router.post('/chats/send-button', checkSession, async (req, res) => {
 // Store for bulk message jobs
 const bulkJobs = new Map();
 
-// Helper function to generate job ID
-const generateJobId = () => {
-    return `bulk_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-};
+// generateJobId moved to helpers/whatsappHelpers.js
 
 // Get bulk job status
 router.get('/chats/bulk-status/:jobId', (req, res) => {
