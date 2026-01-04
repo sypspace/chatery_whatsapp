@@ -839,6 +839,18 @@
                                     <option value="POST|/api/whatsapp/chats/check-number">POST /chats/check-number - Check number exists</option>
                                     <option value="POST|/api/whatsapp/chats/profile-picture">POST /chats/profile-picture - Get profile picture</option>
                                 </optgroup>
+                                <optgroup label="Bulk Messaging">
+                                    <option value="POST|/api/whatsapp/chats/send-bulk">POST /chats/send-bulk - Send bulk
+                                        text (Background)</option>
+                                    <option value="POST|/api/whatsapp/chats/send-bulk-image">POST /chats/send-bulk-image
+                                        - Send bulk image (Background)</option>
+                                    <option value="POST|/api/whatsapp/chats/send-bulk-document">POST
+                                        /chats/send-bulk-document - Send bulk document (Background)</option>
+                                    <option value="GET|/api/whatsapp/chats/bulk-status/{jobId}">GET
+                                        /chats/bulk-status/:jobId - Get job status</option>
+                                    <option value="POST|/api/whatsapp/chats/bulk-jobs">POST /chats/bulk-jobs - Get all
+                                        bulk jobs</option>
+                                </optgroup>
                                 <optgroup label="Chat History">
                                     <option value="POST|/api/whatsapp/chats/overview">POST /chats/overview - Get chats overview</option>
                                     <option value="POST|/api/whatsapp/contacts">POST /contacts - Get contacts</option>
@@ -878,6 +890,11 @@
                         <div class="form-group" id="sessionIdGroup" style="display: none;">
                             <label class="form-label">Session ID (for URL)</label>
                             <input type="text" class="form-input" id="apiSessionId" placeholder="Enter session ID">
+                        </div>
+                        <div class="form-group" id="jobIdGroup" style="display: none;">
+                            <label class="form-label">Job ID (for URL)</label>
+                            <input type="text" class="form-input" id="apiJobId"
+                                placeholder="Enter job ID (e.g., bulk_123456789_abc123def)">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Request Body (JSON)</label>
@@ -960,7 +977,7 @@
             </div>
             <div style="font-size: 12px; color: var(--text-muted);">
                 Thanks to <a href="https://github.com/farinchan" target="_blank">Farin Chan</a> for the original design inspiration. <br />
-                © 2024 Chatery. Open Source under MIT License.
+                © <span id="footerYear"></span> Chatery. Open Source under MIT License.
             </div>
         </div>
     </footer>
@@ -1078,6 +1095,8 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
+        document.getElementById('footerYear').textContent = new Date().getFullYear();
+
         const API_BASE = '/api/whatsapp';
         let socket = null;
         let sessions = [];
@@ -1553,6 +1572,7 @@
             const endpoint = document.getElementById('apiEndpoint').value;
             const [method, path] = endpoint.split('|');
             const sessionIdGroup = document.getElementById('sessionIdGroup');
+            const jobIdGroup = document.getElementById('jobIdGroup');
             const bodyTextarea = document.getElementById('apiBody');
             const apiHelp = document.getElementById('apiHelp');
             
@@ -1563,6 +1583,13 @@
                 sessionIdGroup.style.display = 'none';
             }
             
+            // Show/hide job ID input for URL params
+            if (path.includes('{jobId}')) {
+                jobIdGroup.style.display = 'block';
+            } else {
+                jobIdGroup.style.display = 'none';
+            }
+
             let body = {};
             let showBody = true;
             let helpText = '';
@@ -1610,18 +1637,20 @@
                     sessionId: '', 
                     chatId: '628123456789', 
                     message: 'Hello from Chatery API!',
-                    typingTime: 0
+                    typingTime: 0,
+                    replyTo: null
                 };
-                helpText = '📝 <code>chatId</code>: Phone number or group ID. <code>typingTime</code>: Typing duration in ms before sending (0 = no typing).';
+                helpText = '📝 <code>chatId</code>: Phone number or group ID. <code>typingTime</code>: Typing duration in ms. <code>replyTo</code>: Message ID to reply to (optional, set null to disable).';
             } else if (path.includes('/chats/send-image')) {
                 body = { 
                     sessionId: '', 
                     chatId: '628123456789', 
                     imageUrl: 'https://example.com/image.jpg', 
                     caption: 'Image caption',
-                    typingTime: 0
+                    typingTime: 0,
+                    replyTo: null
                 };
-                helpText = '🖼️ <code>imageUrl</code>: Direct URL to image. <code>typingTime</code>: Typing duration in ms.';
+                helpText = '🖼️ <code>imageUrl</code>: Direct URL to image. <code>typingTime</code>: Typing duration in ms. <code>replyTo</code>: Message ID to reply to (optional).';
             } else if (path.includes('/chats/send-document')) {
                 body = { 
                     sessionId: '', 
@@ -1629,9 +1658,10 @@
                     documentUrl: 'https://example.com/document.pdf', 
                     filename: 'document.pdf',
                     mimetype: 'application/pdf',
-                    typingTime: 0
+                    typingTime: 0,
+                    replyTo: null
                 };
-                helpText = '📄 <code>mimetype</code>: MIME type. <code>typingTime</code>: Typing duration in ms.';
+                helpText = '📄 <code>mimetype</code>: MIME type. <code>typingTime</code>: Typing duration in ms. <code>replyTo</code>: Message ID to reply to (optional).';
             } else if (path.includes('/chats/send-location')) {
                 body = { 
                     sessionId: '', 
@@ -1639,18 +1669,20 @@
                     latitude: -6.2088,
                     longitude: 106.8456,
                     name: 'Jakarta, Indonesia',
-                    typingTime: 0
+                    typingTime: 0,
+                    replyTo: null
                 };
-                helpText = '📍 GPS coordinates. <code>typingTime</code>: Typing duration in ms.';
+                helpText = '📍 GPS coordinates. <code>replyTo</code>: Message ID to reply to (optional).';
             } else if (path.includes('/chats/send-contact')) {
                 body = { 
                     sessionId: '', 
                     chatId: '628123456789', 
                     contactName: 'John Doe',
                     contactPhone: '628987654321',
-                    typingTime: 0
+                    typingTime: 0,
+                    replyTo: null
                 };
-                helpText = '👤 <code>contactPhone</code>: Contact phone number. <code>typingTime</code>: Typing duration in ms.';
+                helpText = '👤 <code>contactPhone</code>: Contact phone number. <code>replyTo</code>: Message ID to reply to (optional).';
             } else if (path.includes('/chats/send-button')) {
                 body = { 
                     sessionId: '', 
@@ -1658,9 +1690,10 @@
                     text: 'Please choose an option:',
                     footer: 'Powered by Chatery',
                     buttons: ['Option 1', 'Option 2', 'Option 3'],
-                    typingTime: 0
+                    typingTime: 0,
+                    replyTo: null
                 };
-                helpText = '🔘 <code>buttons</code>: Max 3 buttons. <code>typingTime</code>: Typing duration in ms.';
+                helpText = '🔘 <code>buttons</code>: Max 3 buttons. <code>replyTo</code>: Message ID to reply to (optional).';
             } else if (path.includes('/chats/presence')) {
                 body = { 
                     sessionId: '', 
@@ -1680,6 +1713,61 @@
                     phone: '628123456789' 
                 };
                 helpText = '🖼️ Get the profile picture URL of a WhatsApp user.';
+            }
+            // Bulk Messaging
+            else if (path.includes('/chats/send-bulk') && !path.includes('image') && !path.includes('document')) {
+                body = {
+                    sessionId: '',
+                    recipients: ['628123456789', '628987654321', '628111222333'],
+                    message: 'Hello from Chatery Bulk API!',
+                    delay: 1000
+                };
+                helpText = `📤 Send bulk text messages (runs in background).<br>
+                    <code>recipients</code>: Array of phone numbers (max 100)<br>
+                    <code>message</code>: Text message to send<br>
+                    <code>delay</code>: Delay between messages in ms (default: 1000)<br>
+                    ⚡ Returns jobId immediately, use bulk-status to track progress.`;
+            } else if (path.includes('/chats/send-bulk-image')) {
+                body = {
+                    sessionId: '',
+                    recipients: ['628123456789', '628987654321', '628111222333'],
+                    imageUrl: 'https://example.com/image.jpg',
+                    caption: 'Bulk image caption',
+                    delay: 1500
+                };
+                helpText = `🖼️ Send bulk images (runs in background).<br>
+                    <code>recipients</code>: Array of phone numbers (max 100)<br>
+                    <code>imageUrl</code>: Direct URL to image<br>
+                    <code>caption</code>: Optional image caption<br>
+                    <code>delay</code>: Delay between messages in ms (default: 1000)<br>
+                    ⚡ Returns jobId immediately, use bulk-status to track progress.`;
+            } else if (path.includes('/chats/send-bulk-document')) {
+                body = {
+                    sessionId: '',
+                    recipients: ['628123456789', '628987654321', '628111222333'],
+                    documentUrl: 'https://example.com/document.pdf',
+                    filename: 'document.pdf',
+                    mimetype: 'application/pdf',
+                    delay: 1500
+                };
+                helpText = `📄 Send bulk documents (runs in background).<br>
+                    <code>recipients</code>: Array of phone numbers (max 100)<br>
+                    <code>documentUrl</code>: Direct URL to document<br>
+                    <code>filename</code>: Document filename<br>
+                    <code>mimetype</code>: MIME type (optional)<br>
+                    <code>delay</code>: Delay between messages in ms (default: 1000)<br>
+                    ⚡ Returns jobId immediately, use bulk-status to track progress.`;
+            } else if (path.includes('/chats/bulk-status')) {
+                showBody = false;
+                helpText = `📊 Get status of a bulk messaging job.<br>
+                    Replace <code>{jobId}</code> in the URL with your job ID.<br>
+                    Returns: status, progress, sent count, failed count, and results.`;
+            } else if (path.includes('/chats/bulk-jobs')) {
+                body = {
+                    sessionId: ''
+                };
+                helpText = `📋 Get all bulk messaging jobs for a session.<br>
+                    Returns: Array of all jobs with their status and progress.`;
             }
             // Chat History
             else if (path.includes('/chats/overview')) {
@@ -1857,6 +1945,7 @@
             const responseBox = document.getElementById('apiResponse');
             const btn = document.getElementById('btnSendApi');
             const sessionIdInput = document.getElementById('apiSessionId');
+            const jobIdInput = document.getElementById('apiJobId');
 
             // Replace {sessionId} placeholder if needed
             if (path.includes('{sessionId}')) {
@@ -1866,6 +1955,16 @@
                     return;
                 }
                 path = path.replace('{sessionId}', sessionId);
+            }
+
+            // Replace {jobId} placeholder if needed
+            if (path.includes('{jobId}')) {
+                const jobId = jobIdInput.value.trim();
+                if (!jobId) {
+                    showToast('error', 'Please enter a Job ID');
+                    return;
+                }
+                path = path.replace('{jobId}', jobId);
             }
 
             btn.disabled = true;
