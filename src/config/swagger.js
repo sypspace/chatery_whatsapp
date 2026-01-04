@@ -21,9 +21,21 @@ A powerful WhatsApp API backend built with Express.js and Baileys library.
 - Real-time WebSocket Events
 - Group Management
 - Send Messages (Text, Image, Document, Location, Contact)
+- **Message Queue with Delay Control** - Reliable message delivery with optional scheduling
 - Auto-Save Media
 - Persistent Store
 - API Key Authentication
+
+## Message Queue & Delay Feature
+All send-* endpoints support optional delay and queue control:
+- **delay='auto'** (default) - Random delay between 1-15 seconds
+- **delay={milliseconds}** - Custom delay (e.g., 5000 for 5 seconds)
+- **delay=0** - Send immediately without delay
+- **priority** - Job priority (higher = more urgent)
+- **attempts** - Number of retry attempts if delivery fails
+- **skipNumberCheck** - Skip WhatsApp number registration validation
+
+Messages are processed asynchronously through BullMQ with Redis backend for reliability and scalability.
 
 ## Authentication
 All API endpoints require \`X-Api-Key\` header (if API_KEY is configured in .env).
