@@ -12,6 +12,7 @@ A powerful WhatsApp API backend built with Express.js and Baileys library.
 ## Quick Links
 - [🎛️ Dashboard](/dashboard) - Admin Dashboard with API Tester
 - [🔌 WebSocket Test](/ws-test) - Test real-time WebSocket events
+- [🎯 Queues](/queue-monitor) - Monitoring message delivery queues
 - [📄 OpenAPI JSON](/api-docs.json) - Download API specification
 
 
