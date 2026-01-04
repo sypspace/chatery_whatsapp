@@ -4,7 +4,7 @@ const { ExpressAdapter } = require('@bull-board/express');
 const { queue } = require('./index');
 
 const serverAdapter = new ExpressAdapter();
-serverAdapter.setBasePath('/queues');
+serverAdapter.setBasePath('/queue-monitor');
 
 createBullBoard({
     serverAdapter,

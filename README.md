@@ -139,7 +139,7 @@ Environment variables (optional):
 
 - `REDIS_HOST` (default: `127.0.0.1`)
 - `REDIS_PORT` (default: `6379`)
-- `MESSAGE_QUEUE_NAME` (default: `messageQueue`)
+- `MESSAGE_QUEUE_NAME` (default: `message-queue`)
 - `QUEUE_CONCURRENCY` (default: `5`) — number of concurrent worker jobs
 - `RATE_LIMIT_MAX` (default: `20`) — max jobs per duration
 - `RATE_LIMIT_DURATION` (default: `1000`) — duration in ms for rate limiting

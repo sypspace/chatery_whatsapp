@@ -1,4 +1,4 @@
-const { queue, worker, scheduler } = require('./messageQueue');
+const { queue, worker, scheduler } = require('./worker');
 
 module.exports = {
     queue,

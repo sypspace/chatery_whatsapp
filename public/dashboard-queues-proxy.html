@@ -12,13 +12,8 @@
   <script>
     (async function(){
       try {
-        const token = localStorage.getItem('api_key') || '';
-        if (!token) {
-          document.body.innerHTML = '<h3>API key not found. Please login to dashboard first.</h3>';
-          return;
-        }
-
-        const resp = await fetch('/queues', { headers: { 'X-Api-Key': token } });
+        // Rely on HttpOnly dashboard_auth cookie for authentication; fetch the monitor at /queue-monitor
+        const resp = await fetch('/queue-monitor');
         if (!resp.ok) {
           const text = await resp.text().catch(()=>resp.statusText);
           document.body.innerHTML = '<h3>Failed to load Queues UI: ' + resp.status + ' ' + resp.statusText + '</h3><pre style="white-space:pre-wrap">'+text+'</pre>';
@@ -26,8 +21,8 @@
         }
 
         let html = await resp.text();
-        // Ensure relative paths resolve to /queues
-        html = html.replace(/<head>/i, '<head>\n<base href="/queues/">');
+        // Ensure relative paths resolve to /queue-monitor
+        html = html.replace(/<head>/i, '<head>\n<base href="/queue-monitor/">');
 
         // Replace document with fetched UI
         document.open();

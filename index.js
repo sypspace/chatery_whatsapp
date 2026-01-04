@@ -15,6 +15,8 @@ const whatsappRoutes = require('./src/routes/whatsapp');
 
 // Import Middleware
 const apiKeyAuth = require('./src/middleware/apiKeyAuth');
+const cookieParser = require('cookie-parser');
+const dashboardAuth = require('./src/middleware/dashboardAuth');
 
 // Import WebSocket Manager
 const wsManager = require('./src/services/websocket/WebSocketManager');
@@ -30,6 +32,7 @@ wsManager.initialize(server, {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Serve static files from public folder (for media access)
 app.use('/media', express.static(path.join(__dirname, 'public', 'media')));
@@ -40,7 +43,7 @@ app.get('/dashboard', (req, res) => {
 });
 
 // Dashboard proxy page to load Queues UI with API key header
-app.get('/dashboard/queues', (req, res) => {
+app.get('/dashboard/queue-monitor', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard-queues-proxy.html'));
 });
 
@@ -98,10 +101,19 @@ app.post('/api/dashboard/login', (req, res) => {
     const validPassword = process.env.DASHBOARD_PASSWORD;
     
     if (username === validUsername && password === validPassword) {
+        // Set HttpOnly cookie for dashboard session authentication
+        const apiKey = process.env.API_KEY || '';
+        res.cookie('dashboard_auth', apiKey, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.json({
             success: true,
             message: 'Login successful',
-            metadata: { api_key: process.env.API_KEY || '' }
+            metadata: { api_key: apiKey }
         });
     } else {
         res.status(401).json({
@@ -122,10 +134,10 @@ app.get('/api/websocket/stats', (req, res) => {
 // WhatsApp Routes (with API Key Authentication)
 app.use('/api/whatsapp', apiKeyAuth, whatsappRoutes);
 
-// Bull Board monitoring UI for queues (protected by API key)
+// Bull Board monitoring UI for queues (protected by dashboard session cookie or API key)
 try {
     const queuesMonitor = require('./src/services/queues/monitor');
-    app.use('/queues', apiKeyAuth, queuesMonitor);
+    app.use('/queue-monitor', dashboardAuth, queuesMonitor);
 } catch (err) {
     console.warn('Bull Board monitor not available:', err.message);
 }

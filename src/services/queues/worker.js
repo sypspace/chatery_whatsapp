@@ -5,7 +5,7 @@ const REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1';
 const REDIS_PORT = Number(process.env.REDIS_PORT) || 6379;
 const connection = { host: REDIS_HOST, port: REDIS_PORT };
 
-const QUEUE_NAME = process.env.MESSAGE_QUEUE_NAME || 'messageQueue';
+const QUEUE_NAME = process.env.MESSAGE_QUEUE_NAME || 'message-queue';
 const QUEUE_CONCURRENCY = Number(process.env.QUEUE_CONCURRENCY) || 5;
 const RATE_LIMIT_MAX = Number(process.env.RATE_LIMIT_MAX) || 20;
 const RATE_LIMIT_DURATION = Number(process.env.RATE_LIMIT_DURATION) || 1000; // ms

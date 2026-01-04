@@ -37,7 +37,22 @@ router.post('/sessions/:sessionId/connect', async (req, res) => {
         if (webhooks) options.webhooks = webhooks;
         
         const result = await whatsappManager.createSession(sessionId, options);
-        
+
+        // If dashboard login flow, set HttpOnly cookie for dashboard auth
+        try {
+            const apiKey = process.env.API_KEY || '';
+            if (apiKey) {
+                res.cookie('dashboard_auth', apiKey, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 24 * 60 * 60 * 1000 // 1 day
+                });
+            }
+        } catch (e) {
+            // ignore cookie set errors
+        }
+
         res.json({
             success: result.success,
             message: result.message,
@@ -336,7 +351,7 @@ const checkSession = (req, res, next) => {
 // Send text message (enqueue)
 router.post('/chats/send-text', checkSession, async (req, res) => {
     try {
-        const { chatId, message, typingTime = 0, delay, priority, attempts } = req.body;
+        const { chatId, message, typingTime = 10, delay = 3000, priority, attempts } = req.body;
 
         if (!chatId || !message) {
             return res.status(400).json({ success: false, message: 'Missing required fields: chatId, message' });
@@ -365,7 +380,7 @@ router.post('/chats/send-text', checkSession, async (req, res) => {
 // Send image (enqueue)
 router.post('/chats/send-image', checkSession, async (req, res) => {
     try {
-        const { chatId, imageUrl, caption, typingTime = 0, delay, priority, attempts } = req.body;
+        const { chatId, imageUrl, caption, typingTime = 10, delay = 300, priority, attempts } = req.body;
 
         if (!chatId || !imageUrl) {
             return res.status(400).json({ success: false, message: 'Missing required fields: chatId, imageUrl' });
