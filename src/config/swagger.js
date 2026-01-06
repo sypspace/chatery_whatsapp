@@ -39,20 +39,11 @@ Messages are processed asynchronously through BullMQ with Redis backend for reli
 
 ## Authentication
 All API endpoints require \`X-Api-Key\` header (if API_KEY is configured in .env).
-
-## Full Documentation
-- [https://docs.chatery.app](https://docs.chatery.app)
-- [https://chatery-whatsapp-documentation.appwrite.network](https://chatery-whatsapp-documentation.appwrite.network)
-
-## ⭐ Support This Project
-- [⭐ Star on GitHub](https://github.com/farinchan/chatery_backend) - Give us a star!
-- [☕ Buy Me a Coffee (saweria)](https://saweria.co/fajrichan) - Support the developer
-
             `,
             contact: {
-                name: 'Fajri Rinaldi Chan',
-                email: 'fajri@gariskode.com',
-                url: 'https://github.com/farinchan'
+                name: 'SYPSpace',
+                email: 'support@sypspace.com',
+                url: 'https://github.com/sypspace'
             },
             license: {
                 name: 'MIT',
