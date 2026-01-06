@@ -1639,34 +1639,122 @@ GET /api/websocket/stats
 ## 📁 Project Structure
 
 ```
-chatery_backend/
-├── index.js                 # Application entry point
-├── package.json
-├── .env                     # Environment variables
-├── README.md                # Documentation
-├── public/
-│   ├── dashboard.html       # Admin dashboard
-│   ├── websocket-test.html  # WebSocket test page
-│   └── media/               # Auto-saved media files
+chatery_whatsapp/
+├── index.js                         # Application entry point
+├── package.json                     # Project dependencies
+├── .env                             # Environment variables
+├── Dockerfile                       # Docker configuration
+├── docker-compose.yml               # Docker Compose setup
+├── README.md                        # Documentation
+├── LICENSE                          # MIT License
+│
+├── public/                          # Static files & UI
+│   ├── dashboard.html               # Admin dashboard interface
+│   ├── custom-header.html           # Custom header component
+│   ├── custom-footer.html           # Custom footer component
+│   ├── websocket-test.html          # WebSocket testing interface
+│   ├── dashboard-queues-proxy.html  # Queue monitor proxy (optional)
+│   └── media/                       # Auto-saved incoming media
 │       └── {sessionId}/
 │           └── {chatId}/
-├── sessions/                # Session authentication data
+│
+├── sessions/                        # Session data storage (auto-generated)
 │   └── {sessionId}/
-│       ├── creds.json
-│       └── store.json
-└── src/
-    ├── routes/
-    │   └── whatsapp.js      # API routes
-    └── services/
-        ├── websocket/
-        │   └── WebSocketManager.js
-        └── whatsapp/
-            ├── index.js
-            ├── WhatsAppManager.js
-            ├── WhatsAppSession.js
-            ├── BaileysStore.js
-            └── MessageFormatter.js
+│
+├── screenshot/                      # Documentation screenshots
+│
+└── src/                             # Source code
+    ├── config/                      # Configuration & API docs
+    │   ├── swagger.js               # Swagger main config
+    │   └── swagger-paths.js         # Swagger API endpoint definitions
+    │
+    ├── helpers/                     # Configuration & API docs
+    │   └── whatsappHelpers.js       # Swagger main config
+    │
+    ├── middleware/                  # Express middleware
+    │   └── apiKeyAuth.js            # API key authentication
+    │
+    ├── routes/                      # API route handlers
+    │   └── whatsapp.js              # WhatsApp API endpoints
+    │
+    ├── helpers/                     # Utility functions
+    │   └── whatsappHelpers.js       # Delay, validation, job helpers
+    │
+    └── services/                    # Business logic layer
+        ├── queues/                  # Message queue system (BullMQ + Redis)
+        │   ├── index.js             # Queue initialization
+        │   ├── worker.js            # Message processing worker
+        │   └── monitor.js           # Bull Board monitor UI
+        │
+        ├── websocket/               # Real-time WebSocket management
+        │   ├── WebSocketManager.js  # Socket.IO connection handler
+        │   └── events.js            # WebSocket event definitions
+        │
+        └── whatsapp/                # WhatsApp client management
+            ├── index.js             # WhatsApp service exports
+            ├── WhatsAppManager.js   # Multi-session manager
+            ├── WhatsAppSession.js   # Individual session handler
+            ├── BaileysStore.js      # Message store for Baileys library
+            └── MessageFormatter.js  # Message formatting utilities
 ```
+
+### Directory Reference
+
+| Directory                 | Purpose                                                       |
+| ------------------------- | ------------------------------------------------------------- |
+| `public/`                 | Static HTML files, custom components, and media storage       |
+| `sessions/`               | WhatsApp session credentials and state (auto-generated)       |
+| `src/config/`             | Swagger/OpenAPI documentation configuration                   |
+| `src/routes/`             | HTTP endpoint handlers and request routing                    |
+| `src/helpers/`            | Reusable utility and helper functions                         |
+| `src/services/`           | Core business logic and service layer                         |
+| `src/services/queues/`    | BullMQ queue system, worker processor, and Bull Board monitor |
+| `src/services/websocket/` | Socket.IO WebSocket management and event handling             |
+| `src/services/whatsapp/`  | Baileys WhatsApp client and session management                |
+
+### Architecture Overview
+
+**Message Sending Flow:**
+
+```
+Client Request
+    ↓
+HTTP Route Handler (src/routes/whatsapp.js)
+    ↓
+Validate & Enqueue Job (BullMQ)
+    ↓
+Redis Queue Storage
+    ↓
+Worker Processor (src/services/queues/worker.js)
+    ↓
+WhatsApp Service (src/services/whatsapp/)
+    ↓
+Baileys Client
+    ↓
+Send via WhatsApp
+    ↓
+Return Job Status to Client
+```
+
+**Real-time Event Flow:**
+
+```
+WhatsApp Event
+    ↓
+Baileys Handler
+    ↓
+WebSocket Service (src/services/websocket/)
+    ↓
+Socket.IO Broadcast
+    ↓
+Dashboard & Clients
+```
+
+**Job Monitoring:**
+
+- Queue Monitor: `http://localhost:3000/queue-monitor` (Bull Board UI)
+- Job Status API: `GET /api/whatsapp/jobs/:jobId`
+- Queue Stats: `GET /api/whatsapp/queue/stats` (optional endpoint)
 
 ---
 
