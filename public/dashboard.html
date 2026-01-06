@@ -1328,10 +1328,10 @@
             }, 30000);
         });
 
-        // Open Queues UI via proxy that attaches API key header
+        // Open Queues UI (Bull Board monitor)
         function openQueuesUI() {
-            // Open proxy page in a new window; proxy will fetch /queue-monitor with header
-            window.open('/dashboard/queue-monitor', '_blank');
+            // Open Bull Board queue monitoring UI directly
+            window.open('/queue-monitor', '_blank');
         }
 
         // WebSocket Connection

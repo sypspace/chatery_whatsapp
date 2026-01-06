@@ -42,11 +42,6 @@ app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
-// Dashboard proxy page to load Queues UI with API key header
-app.get('/dashboard/queue-monitor', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'dashboard-queues-proxy.html'));
-});
-
 // Serve WebSocket test page
 app.get('/ws-test', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'websocket-test.html'));
