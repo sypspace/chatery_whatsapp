@@ -527,7 +527,7 @@ router.post('/chats/send-contact', checkSession, async (req, res) => {
     }
 });
 
-// Send button message (enqueue)
+// Send button message (uses Poll as buttons are deprecated by WhatsApp)
 router.post('/chats/send-button', checkSession, async (req, res) => {
     try {
         const { chatId, text, footer, buttons, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = true } = req.body;

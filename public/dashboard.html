@@ -901,7 +901,9 @@
                                     <option value="POST|/api/whatsapp/chats/send-contact">POST /chats/send-contact -
                                         Send contact</option>
                                     <option value="POST|/api/whatsapp/chats/send-button">POST /chats/send-button - Send
-                                        button message</option>
+                                        button (uses Poll)</option>
+                                    <option value="POST|/api/whatsapp/chats/send-poll">POST /chats/send-poll - Send
+                                        poll message</option>
                                     <option value="POST|/api/whatsapp/chats/presence">POST /chats/presence - Send typing
                                         indicator</option>
                                     <option value="POST|/api/whatsapp/chats/check-number">POST /chats/check-number -
@@ -1798,6 +1800,17 @@
                     replyTo: null
                 };
                 helpText = '👤 <code>contactName</code>: Contact name.<br><code>contactPhone</code>: Contact phone number.<br><code>delay</code>: "auto" (random 1-15s), numeric milliseconds, or 0 (immediate).<br><code>priority</code>: Job priority (optional).<br><code>attempts</code>: Retry count (optional).<br><code>skipNumberCheck</code>: Skip WhatsApp registration check.<br><code>typingTime</code>: Typing indicator duration in ms.';
+            } else if (path.includes('/chats/send-poll')) {
+                body = {
+                    sessionId: '',
+                    chatId: '628123456789',
+                    question: 'What is your favorite color?',
+                    options: ['Red', 'Blue', 'Green', 'Yellow'],
+                    selectableCount: 1,
+                    typingTime: 0,
+                    replyTo: null
+                };
+                helpText = '📊 <code>options</code>: 2-12 choices. <code>selectableCount</code>: 1 for single choice, more for multiple. <code>replyTo</code>: Message ID to reply to (optional).';
             } else if (path.includes('/chats/send-button')) {
                 body = {
                     sessionId: '',
