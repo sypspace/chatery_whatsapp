@@ -802,20 +802,24 @@
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">
-            <div class="logo-text">Chatery<span>API</span></div>
-        </div>
-        <div class="header-actions">
-            <div class="status-badge">
-                <div class="status-dot" id="wsStatus"></div>
-                <span id="wsStatusText">WebSocket Disconnected</span>
+    <!-- Header Placeholder (loaded from custom-header.html) -->
+    <div id="customHeaderPlaceholder">
+        <!-- Fallback header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-text">Chatery<span>API</span></div>
             </div>
-            <a href="/ws-test" class="btn btn-outline btn-sm" target="_blank">WebSocket Tester</a>
-            <button onclick="logout()" class="btn btn-danger btn-sm">🚪 Logout</button>
-        </div>
-    </header>
+            <div class="header-actions">
+                <div class="status-badge">
+                    <div class="status-dot" id="wsStatus"></div>
+                    <span id="wsStatusText">WebSocket Disconnected</span>
+                </div>
+                <a href="/queue-monitor" class="btn btn-outline btn-sm" target="_blank" title="Open queue monitor in new tab">📊 Queues</a>
+                <a href="/ws-test" class="btn btn-outline btn-sm" target="_blank">WebSocket Tester</a>
+                <button onclick="logout()" class="btn btn-danger btn-sm">🚪 Logout</button>
+            </div>
+        </header>
+    </div>
 
     <!-- Main Container -->
     <div class="container">
@@ -1052,29 +1056,22 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-buttons">
-                <a href="https://saweria.co/fajrichan" target="_blank" class="btn btn-donate">
-                    ☕ Buy Me a Coffee
-                </a>
-                <a href="https://github.com/farinchan/chatery_whatsapp" target="_blank" class="btn btn-github">
-                    ⭐ Star on GitHub
-                </a>
-                <a href="https://www.linkedin.com/in/fajri-chan" target="_blank" class="btn btn-outline">
-                    💼 LinkedIn
-                </a>
+    <!-- Footer Placeholder (loaded from custom-footer.html) -->
+    <div id="customFooterPlaceholder">
+        <!-- Fallback footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-credit">
+                    <strong>Chatery API</strong> - WhatsApp Multi-Session Gateway | 
+                    Maintained by <a href="https://sypspace.com" target="_blank">SYPSpace</a>
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted);">
+                    Thanks to <a href="https://github.com/farinchan" target="_blank">Farin Chan</a> for the original design inspiration. <br />
+                    © <span id="footerYear"></span> Chatery. Open Source under MIT License.
+                </div>
             </div>
-            <div class="footer-credit">
-                Made with ❤️ by <a href="https://github.com/farinchan" target="_blank">Farin Chan</a> | 
-                <strong>Chatery API</strong> - WhatsApp Multi-Session Gateway
-            </div>
-            <div style="font-size: 12px; color: var(--text-muted);">
-                © <span id="footerYear"></span> Chatery. Open Source under MIT License.
-            </div>
-        </div>
-    </footer>
+        </footer>
+    </div>
 
     <!-- QR Modal -->
     <div class="modal-overlay" id="qrModal">
@@ -2344,6 +2341,51 @@
                 }
             });
         });
+
+        // ===== Custom Header/Footer Loader =====
+        // Load custom header from external file
+        async function loadCustomHeader() {
+            try {
+                const resp = await fetch('/custom-header.html');
+                if (!resp.ok) return;
+                const html = await resp.text();
+                const placeholder = document.getElementById('customHeaderPlaceholder');
+                if (placeholder) {
+                    // Create a container to replace placeholder
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    placeholder.replaceWith(...tempDiv.childNodes);
+                }
+            } catch (e) {
+                console.warn('Failed to load custom header:', e);
+                // Fallback is already in placeholder
+            }
+        }
+
+        // Load custom footer from external file
+        async function loadCustomFooter() {
+            try {
+                const resp = await fetch('/custom-footer.html');
+                if (!resp.ok) return;
+                const html = await resp.text();
+                const placeholder = document.getElementById('customFooterPlaceholder');
+                if (placeholder) {
+                    // Create a container to replace placeholder
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    placeholder.replaceWith(...tempDiv.childNodes);
+                }
+            } catch (e) {
+                console.warn('Failed to load custom footer:', e);
+                // Fallback is already in placeholder
+            }
+        }
+
+        // Load custom header and footer on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadCustomHeader();
+            await loadCustomFooter();
+        }, { once: true });
     </script>
 </body>
 
