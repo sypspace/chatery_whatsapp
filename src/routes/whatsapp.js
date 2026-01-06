@@ -527,7 +527,7 @@ router.post('/chats/send-contact', checkSession, async (req, res) => {
     }
 });
 
-// Send button message (enqueue)
+// Send button message (uses Poll as buttons are deprecated by WhatsApp)
 router.post('/chats/send-button', checkSession, async (req, res) => {
     try {
         const { chatId, text, footer, buttons, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = true } = req.body;
@@ -558,6 +558,52 @@ router.post('/chats/send-button', checkSession, async (req, res) => {
 
         const job = await queue.add('send-button', jobData, jobOptions);
         res.status(202).json({ success: true, message: 'Button message queued', jobId: job.id });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Send poll message (enqueue)
+router.post('/chats/send-poll', checkSession, async (req, res) => {
+    try {
+        const { chatId, question, options, selectableCount = 1, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = true } = req.body;
+
+        if (!chatId || !question || !options || !Array.isArray(options)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields: chatId, question, options (array)'
+            });
+        }
+
+        if (options.length < 2 || options.length > 12) {
+            return res.status(400).json({
+                success: false,
+                message: 'Poll must have between 2 and 12 options'
+            });
+        }
+
+        if (!skipNumberCheck) {
+            const ok = await checkNumberRegistered(req.session, chatId);
+            if (!ok) return res.status(400).json({ success: false, message: 'Phone number is not registered on WhatsApp' });
+        }
+
+        const jobData = {
+            sessionId: req.body.sessionId,
+            chatId,
+            question,
+            options,
+            selectableCount,
+            typingTime,
+            replyTo
+        };
+
+        const jobOptions = {};
+        jobOptions.delay = resolveDelay(delay);
+        if (priority) jobOptions.priority = priority;
+        if (attempts) jobOptions.attempts = Number(attempts);
+
+        const job = await queue.add('send-poll', jobData, jobOptions);
+        res.status(202).json({ success: true, message: 'Poll message queued', jobId: job.id });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

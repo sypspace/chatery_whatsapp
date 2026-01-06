@@ -21,7 +21,7 @@ A powerful WhatsApp API backend built with Express.js and Baileys library.
 - Real-time WebSocket Events
 - Group Management
 - Send Messages (Text, Image, Document, Location, Contact)
-- **Message Queue with Delay Control** - Reliable message delivery with optional scheduling
+- Message Queue with Delay Control - Reliable message delivery with optional scheduling
 - Auto-Save Media
 - Persistent Store
 - API Key Authentication

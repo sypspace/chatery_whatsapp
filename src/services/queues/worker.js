@@ -85,6 +85,13 @@ const worker = new Worker(
                     }
                     return await session.sendButton(data.chatId, data.text, data.footer || '', data.buttons || [], data.typingTime || 0);
                 }
+                case 'send-poll': {
+                    if (!data.skipNumberCheck) {
+                        const ok = await checkNumberRegistered(session, data.chatId);
+                        if (!ok) throw new UnrecoverableError('Phone number is not registered on WhatsApp');
+                    }
+                    return await session.sendPoll(data.chatId, data.question, data.options, data.selectableCount || 1, data.typingTime || 0);
+                }
             default:
                 throw new Error('Unknown job name: ' + name);
         }

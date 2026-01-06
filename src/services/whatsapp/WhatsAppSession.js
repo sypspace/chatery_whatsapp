@@ -520,7 +520,7 @@ class WhatsAppSession {
         }
     }
 
-    async sendTextMessage(chatId, message, typingTime = 0) {
+    async sendTextMessage(chatId, message, typingTime = 0, replyTo = null) {
         try {
             if (!this.socket || this.connectionStatus !== 'connected') {
                 return { success: false, message: 'Session not connected' };
@@ -531,7 +531,19 @@ class WhatsAppSession {
             // Simulate typing if typingTime > 0
             await this._simulateTyping(jid, typingTime);
             
-            const result = await this.socket.sendMessage(jid, { text: message });
+            const messageOptions = { text: message };
+            
+            // Add quoted message for reply
+            if (replyTo) {
+                messageOptions.quoted = {
+                    key: {
+                        remoteJid: jid,
+                        id: replyTo
+                    }
+                };
+            }
+            
+            const result = await this.socket.sendMessage(jid, messageOptions);
             
             return { 
                 success: true, 
@@ -547,7 +559,7 @@ class WhatsAppSession {
         }
     }
 
-    async sendImage(chatId, imageUrl, caption = '', typingTime = 0) {
+    async sendImage(chatId, imageUrl, caption = '', typingTime = 0, replyTo = null) {
         try {
             if (!this.socket || this.connectionStatus !== 'connected') {
                 return { success: false, message: 'Session not connected' };
@@ -558,10 +570,22 @@ class WhatsAppSession {
             // Simulate typing if typingTime > 0
             await this._simulateTyping(jid, typingTime);
             
-            const result = await this.socket.sendMessage(jid, {
+            const messageOptions = {
                 image: { url: imageUrl },
                 caption: caption
-            });
+            };
+            
+            // Add quoted message for reply
+            if (replyTo) {
+                messageOptions.quoted = {
+                    key: {
+                        remoteJid: jid,
+                        id: replyTo
+                    }
+                };
+            }
+            
+            const result = await this.socket.sendMessage(jid, messageOptions);
 
             return {
                 success: true,
@@ -577,7 +601,7 @@ class WhatsAppSession {
         }
     }
 
-    async sendDocument(chatId, documentUrl, filename, mimetype = 'application/pdf', typingTime = 0) {
+    async sendDocument(chatId, documentUrl, filename, mimetype = 'application/pdf', typingTime = 0, replyTo = null) {
         try {
             if (!this.socket || this.connectionStatus !== 'connected') {
                 return { success: false, message: 'Session not connected' };
@@ -588,11 +612,23 @@ class WhatsAppSession {
             // Simulate typing if typingTime > 0
             await this._simulateTyping(jid, typingTime);
             
-            const result = await this.socket.sendMessage(jid, {
+            const messageOptions = {
                 document: { url: documentUrl },
                 fileName: filename,
                 mimetype: mimetype
-            });
+            };
+            
+            // Add quoted message for reply
+            if (replyTo) {
+                messageOptions.quoted = {
+                    key: {
+                        remoteJid: jid,
+                        id: replyTo
+                    }
+                };
+            }
+            
+            const result = await this.socket.sendMessage(jid, messageOptions);
 
             return {
                 success: true,
@@ -608,7 +644,7 @@ class WhatsAppSession {
         }
     }
 
-    async sendLocation(chatId, latitude, longitude, name = '', typingTime = 0) {
+    async sendLocation(chatId, latitude, longitude, name = '', typingTime = 0, replyTo = null) {
         try {
             if (!this.socket || this.connectionStatus !== 'connected') {
                 return { success: false, message: 'Session not connected' };
@@ -619,13 +655,25 @@ class WhatsAppSession {
             // Simulate typing if typingTime > 0
             await this._simulateTyping(jid, typingTime);
             
-            const result = await this.socket.sendMessage(jid, {
+            const messageOptions = {
                 location: {
                     degreesLatitude: latitude,
                     degreesLongitude: longitude,
                     name: name
                 }
-            });
+            };
+            
+            // Add quoted message for reply
+            if (replyTo) {
+                messageOptions.quoted = {
+                    key: {
+                        remoteJid: jid,
+                        id: replyTo
+                    }
+                };
+            }
+            
+            const result = await this.socket.sendMessage(jid, messageOptions);
 
             return {
                 success: true,
@@ -641,7 +689,7 @@ class WhatsAppSession {
         }
     }
 
-    async sendContact(chatId, contactName, contactPhone, typingTime = 0) {
+    async sendContact(chatId, contactName, contactPhone, typingTime = 0, replyTo = null) {
         try {
             if (!this.socket || this.connectionStatus !== 'connected') {
                 return { success: false, message: 'Session not connected' };
@@ -654,12 +702,24 @@ class WhatsAppSession {
             
             const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${contactName}\nTEL;type=CELL;type=VOICE;waid=${contactPhone}:+${contactPhone}\nEND:VCARD`;
             
-            const result = await this.socket.sendMessage(jid, {
+            const messageOptions = {
                 contacts: {
                     displayName: contactName,
                     contacts: [{ vcard }]
                 }
-            });
+            };
+            
+            // Add quoted message for reply
+            if (replyTo) {
+                messageOptions.quoted = {
+                    key: {
+                        remoteJid: jid,
+                        id: replyTo
+                    }
+                };
+            }
+            
+            const result = await this.socket.sendMessage(jid, messageOptions);
 
             return {
                 success: true,
@@ -675,7 +735,13 @@ class WhatsAppSession {
         }
     }
 
-    async sendButton(chatId, text, footer, buttons, typingTime = 0) {
+    /**
+     * Send Button Message
+     * NOTE: Regular button messages are DEPRECATED by WhatsApp since 2022.
+     * This method now uses Poll as an alternative for interactive choices.
+     * If you need actual buttons, you must use WhatsApp Business API (Cloud API).
+     */
+    async sendButton(chatId, text, footer, buttons, typingTime = 0, replyTo = null) {
         try {
             if (!this.socket || this.connectionStatus !== 'connected') {
                 return { success: false, message: 'Session not connected' };
@@ -686,20 +752,100 @@ class WhatsAppSession {
             // Simulate typing if typingTime > 0
             await this._simulateTyping(jid, typingTime);
             
-            const result = await this.socket.sendMessage(jid, {
-                text: text,
-                footer: footer,
-                buttons: buttons.map((btn, idx) => ({
-                    buttonId: `btn_${idx}`,
-                    buttonText: { displayText: btn },
-                    type: 1
-                })),
-                headerType: 1
-            });
+            // WhatsApp deprecated regular buttons in 2022
+            // Using Poll as an alternative for interactive choices
+            const pollName = footer ? `${text}\n\n${footer}` : text;
+
+            const messageContent = {
+                poll: {
+                    name: pollName,
+                    values: buttons, // Poll options as choices
+                    selectableCount: 1 // Single selection like a button
+                }
+            };
+
+            const messageOptions = {};
+            
+            // Add quoted message for reply
+            if (replyTo) {
+                const quotedMsg = this.store?.getMessage(jid, replyTo);
+                if (quotedMsg) {
+                    messageOptions.quoted = quotedMsg;
+                } else {
+                    messageOptions.quoted = {
+                        key: {
+                            remoteJid: jid,
+                            id: replyTo,
+                            fromMe: false
+                        },
+                        message: { conversation: '' }
+                    };
+                }
+            }
+            
+            const result = await this.socket.sendMessage(jid, messageContent, messageOptions);
 
             return {
                 success: true,
-                message: 'Button message sent successfully',
+                message: 'Interactive poll sent (buttons are deprecated by WhatsApp)',
+                data: {
+                    messageId: result.key.id,
+                    chatId: jid,
+                    timestamp: new Date().toISOString(),
+                    note: 'WhatsApp deprecated button messages in 2022. Poll is used as alternative.'
+                }
+            };
+        } catch (error) {
+            return { success: false, message: error.message };
+        }
+    }
+
+    /**
+     * Send Poll Message
+     * A working alternative for interactive choices
+     */
+    async sendPoll(chatId, question, options, selectableCount = 1, typingTime = 0, replyTo = null) {
+        try {
+            if (!this.socket || this.connectionStatus !== 'connected') {
+                return { success: false, message: 'Session not connected' };
+            }
+
+            const jid = this.formatChatId(chatId);
+            
+            // Simulate typing if typingTime > 0
+            await this._simulateTyping(jid, typingTime);
+            
+            const messageContent = {
+                poll: {
+                    name: question,
+                    values: options,
+                    selectableCount: selectableCount
+                }
+            };
+            const messageOptions = {};
+            
+            // Add quoted message for reply
+            if (replyTo) {
+                const quotedMsg = this.store?.getMessage(jid, replyTo);
+                if (quotedMsg) {
+                    messageOptions.quoted = quotedMsg;
+                } else {
+                    messageOptions.quoted = {
+                        key: {
+                            remoteJid: jid,
+                            id: replyTo,
+                            fromMe: false
+                        },
+                        message: { conversation: '' }
+                    };
+                }
+            }
+            
+            const result = await this.socket.sendMessage(jid, messageContent, messageOptions);
+
+            return {
+                success: true,
+                message: 'Poll sent successfully',
                 data: {
                     messageId: result.key.id,
                     chatId: jid,

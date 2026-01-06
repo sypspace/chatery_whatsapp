@@ -14,8 +14,10 @@ A powerful WhatsApp API backend built with Express.js and Baileys library. Suppo
 - 📱 **Multi-Session Support** - Manage multiple WhatsApp accounts simultaneously
 - 🔌 **Real-time WebSocket** - Get instant notifications for messages, status updates, and more
 - 👥 **Group Management** - Create, manage, and control WhatsApp groups
-- 📨 **Send Messages** - Text, images, documents, locations, contacts, and buttons
-- � **Bulk Messaging** - Send messages to multiple recipients with background processing
+- 📨 **Send Messages** - Text, images, documents, locations, contacts, and more
+- ↩️ **Reply to Messages** - Reply/quote specific messages with replyTo parameter
+- 📊 **Poll Messages** - Send interactive polls with single or multiple choice
+- 📤 **Bulk Messaging** - Send messages to multiple recipients with background processing
 - 📥 **Auto-Save Media** - Automatically save incoming media to server
 - 💾 **Persistent Store** - Message history with optimized caching
 - 🔐 **Session Persistence** - Sessions survive server restarts
@@ -451,6 +453,8 @@ DELETE /sessions/:sessionId
 ### Messaging
 
 > **💡 Typing Indicator**: All messaging endpoints support `typingTime` parameter (in milliseconds) to simulate typing before sending the message. This makes the bot appear more human-like.
+>
+> **↩️ Reply to Message**: All messaging endpoints support `replyTo` parameter to reply to a specific message. Pass the message ID to quote/reply to that message.
 
 #### Send Text Message
 
@@ -465,16 +469,22 @@ POST /chats/send-text
   "sessionId": "mysession",
   "chatId": "628123456789",
   "message": "Hello, World!",
-  "typingTime": 2000
+  "typingTime": 2000,
+  "replyTo": "3EB0B430A2B52B67D0"
 }
 ```
 
-| Parameter    | Type   | Description                                                 |
-| ------------ | ------ | ----------------------------------------------------------- |
-| `sessionId`  | string | Required. Session ID                                        |
-| `chatId`     | string | Required. Phone number (628xxx) or group ID (xxx@g.us)      |
-| `message`    | string | Required. Text message to send                              |
-| `typingTime` | number | Optional. Typing duration in ms before sending (default: 0) |
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number (628xxx) or group ID (xxx@g.us)                          |
+| `message`         | string     | Required. Text message to send                                                  |
+| `typingTime`      | number     | Optional. Typing indicator duration in ms (default: 0)                          |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: false)                      |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
 
 #### Send Image
 
@@ -490,17 +500,23 @@ POST /chats/send-image
   "chatId": "628123456789",
   "imageUrl": "https://example.com/image.jpg",
   "caption": "Check this out!",
-  "typingTime": 1500
+  "typingTime": 1500,
+  "replyTo": null
 }
 ```
 
-| Parameter    | Type   | Description                                  |
-| ------------ | ------ | -------------------------------------------- |
-| `sessionId`  | string | Required. Session ID                         |
-| `chatId`     | string | Required. Phone number or group ID           |
-| `imageUrl`   | string | Required. Direct URL to image file           |
-| `caption`    | string | Optional. Image caption                      |
-| `typingTime` | number | Optional. Typing duration in ms (default: 0) |
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number or group ID                                              |
+| `imageUrl`        | string     | Required. Direct URL to image file                                              |
+| `caption`         | string     | Optional. Image caption                                                         |
+| `typingTime`      | number     | Optional. Typing duration in ms (default: 0)                                    |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: false)                      |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
 
 #### Send Document
 
@@ -517,18 +533,24 @@ POST /chats/send-document
   "documentUrl": "https://example.com/document.pdf",
   "filename": "document.pdf",
   "mimetype": "application/pdf",
-  "typingTime": 1000
+  "typingTime": 1000,
+  "replyTo": null
 }
 ```
 
-| Parameter     | Type   | Description                                    |
-| ------------- | ------ | ---------------------------------------------- |
-| `sessionId`   | string | Required. Session ID                           |
-| `chatId`      | string | Required. Phone number or group ID             |
-| `documentUrl` | string | Required. Direct URL to document               |
-| `filename`    | string | Required. Filename to display                  |
-| `mimetype`    | string | Optional. MIME type (default: application/pdf) |
-| `typingTime`  | number | Optional. Typing duration in ms (default: 0)   |
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number or group ID                                              |
+| `documentUrl`     | string     | Required. Direct URL to document                                                |
+| `filename`        | string     | Required. Filename to display                                                   |
+| `mimetype`        | string     | Optional. MIME type (default: application/pdf)                                  |
+| `typingTime`      | number     | Optional. Typing duration in ms (default: 0)                                    |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: false)                      |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
 
 #### Send Location
 
@@ -545,18 +567,24 @@ POST /chats/send-location
   "latitude": -6.2088,
   "longitude": 106.8456,
   "name": "Jakarta, Indonesia",
-  "typingTime": 1000
+  "typingTime": 1000,
+  "replyTo": null
 }
 ```
 
-| Parameter    | Type   | Description                                  |
-| ------------ | ------ | -------------------------------------------- |
-| `sessionId`  | string | Required. Session ID                         |
-| `chatId`     | string | Required. Phone number or group ID           |
-| `latitude`   | number | Required. GPS latitude                       |
-| `longitude`  | number | Required. GPS longitude                      |
-| `name`       | string | Optional. Location name                      |
-| `typingTime` | number | Optional. Typing duration in ms (default: 0) |
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number or group ID                                              |
+| `latitude`        | number     | Required. GPS latitude                                                          |
+| `longitude`       | number     | Required. GPS longitude                                                         |
+| `name`            | string     | Optional. Location name                                                         |
+| `typingTime`      | number     | Optional. Typing duration in ms (default: 0)                                    |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: false)                      |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
 
 #### Send Contact
 
@@ -572,23 +600,65 @@ POST /chats/send-contact
   "chatId": "628123456789",
   "contactName": "John Doe",
   "contactPhone": "628987654321",
-  "typingTime": 500
+  "typingTime": 500,
+  "replyTo": null
 }
 ```
 
-| Parameter      | Type   | Description                                  |
-| -------------- | ------ | -------------------------------------------- |
-| `sessionId`    | string | Required. Session ID                         |
-| `chatId`       | string | Required. Phone number or group ID           |
-| `contactName`  | string | Required. Contact display name               |
-| `contactPhone` | string | Required. Contact phone number               |
-| `typingTime`   | number | Optional. Typing duration in ms (default: 0) |
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number or group ID                                              |
+| `contactName`     | string     | Required. Contact display name                                                  |
+| `contactPhone`    | string     | Required. Contact phone number                                                  |
+| `typingTime`      | number     | Optional. Typing duration in ms (default: 0)                                    |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: false)                      |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
 
-#### Send Button Message
+#### Send Poll Message
+
+```http
+POST /chats/send-poll
+```
+
+**Body:**
+
+```json
+{
+  "sessionId": "mysession",
+  "chatId": "628123456789",
+  "question": "What is your favorite color?",
+  "options": ["Red", "Blue", "Green", "Yellow"],
+  "selectableCount": 1,
+  "typingTime": 2000,
+  "replyTo": null
+}
+```
+
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number or group ID                                              |
+| `question`        | string     | Required. Poll question                                                         |
+| `options`         | array      | Required. Array of options (2-12 items)                                         |
+| `selectableCount` | number     | Optional. Number of selectable options (default: 1)                             |
+| `typingTime`      | number     | Optional. Typing duration in ms (default: 0)                                    |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: true)                       |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
+
+#### Send Button Message (DEPRECATED)
 
 ```http
 POST /chats/send-button
 ```
+
+> ⚠️ **Note:** WhatsApp deprecated button messages in 2022. This endpoint now uses **Poll** as an alternative. For actual interactive buttons, you need WhatsApp Business API (Cloud API).
 
 **Body:**
 
@@ -599,18 +669,20 @@ POST /chats/send-button
   "text": "Please choose an option:",
   "footer": "Powered by Chatery",
   "buttons": ["Option 1", "Option 2", "Option 3"],
-  "typingTime": 2000
+  "typingTime": 2000,
+  "replyTo": null
 }
 ```
 
-| Parameter    | Type   | Description                                  |
-| ------------ | ------ | -------------------------------------------- |
-| `sessionId`  | string | Required. Session ID                         |
-| `chatId`     | string | Required. Phone number or group ID           |
-| `text`       | string | Required. Button message text                |
-| `footer`     | string | Optional. Footer text                        |
-| `buttons`    | array  | Required. Array of button labels (max 3)     |
-| `typingTime` | number | Optional. Typing duration in ms (default: 0) |
+| Parameter    | Type   | Description                                    |
+| ------------ | ------ | ---------------------------------------------- |
+| `sessionId`  | string | Required. Session ID                           |
+| `chatId`     | string | Required. Phone number or group ID             |
+| `text`       | string | Required. Poll question (combined with footer) |
+| `footer`     | string | Optional. Additional text                      |
+| `buttons`    | array  | Required. Array of options (poll choices)      |
+| `typingTime` | number | Optional. Typing duration in ms (default: 0)   |
+| `replyTo`    | string | Optional. Message ID to reply to               |
 
 #### Send Presence Update
 
@@ -663,6 +735,130 @@ POST /chats/profile-picture
   "phone": "628123456789"
 }
 ```
+
+---
+
+## 📊 Message Queue & Delay Control
+
+All `send-*` endpoints support optional delay and queue parameters for reliable, scheduled message delivery.
+
+### ⏱️ Delay Options
+
+The `delay` parameter controls when a message is sent:
+
+| Value            | Behavior                            | Example         |
+| ---------------- | ----------------------------------- | --------------- |
+| `"auto"`         | Random delay 1-15 seconds (default) | `delay: "auto"` |
+| `0`              | Send immediately without delay      | `delay: 0`      |
+| `{milliseconds}` | Custom delay in milliseconds        | `delay: 5000`   |
+
+### 📋 Queue Parameters
+
+When sending a message, include these parameters to control queueing:
+
+```json
+{
+  "sessionId": "mysession",
+  "chatId": "628123456789",
+  "message": "Hello!",
+  "delay": "auto",
+  "priority": 0,
+  "attempts": 3,
+  "skipNumberCheck": false
+}
+```
+
+| Parameter         | Type           | Description                                                  |
+| ----------------- | -------------- | ------------------------------------------------------------ |
+| `delay`           | string\|number | Optional. `"auto"`, `0`, or milliseconds (default: `"auto"`) |
+| `priority`        | number         | Optional. Job priority (higher = more urgent, default: 0)    |
+| `attempts`        | number         | Optional. Retry attempts if delivery fails (default: 3)      |
+| `skipNumberCheck` | boolean        | Optional. Skip WhatsApp number validation (default: false)   |
+
+### 🔄 Job Response
+
+When you send a message with queueing, the API returns immediately with a job ID:
+
+```json
+{
+  "success": true,
+  "message": "Message queued for delivery",
+  "data": {
+    "sessionId": "mysession",
+    "chatId": "628123456789",
+    "jobId": "msg_1234567890_abc123def",
+    "status": "queued",
+    "delay": 5000,
+    "priority": 0,
+    "attempts": 3,
+    "estimatedDeliveryTime": "2024-01-06T10:30:15.000Z"
+  }
+}
+```
+
+### 📍 Check Job Status
+
+Use the job ID to check delivery status:
+
+```http
+GET /jobs/:jobId
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "jobId": "msg_1234567890_abc123def",
+    "status": "completed",
+    "progress": 100,
+    "data": {
+      "sessionId": "mysession",
+      "chatId": "628123456789"
+    },
+    "result": {
+      "key": "3EB0B430A2B52B67D0",
+      "status": "delivered"
+    },
+    "failedReason": null,
+    "timestamp": "2024-01-06T10:30:15.000Z"
+  }
+}
+```
+
+### 📈 Monitor Queue Activity
+
+Access the Queue Monitor dashboard at `http://localhost:3000/queue-monitor` to:
+
+- View real-time queue statistics
+- Monitor active, completed, and failed jobs
+- Inspect job details and error messages
+- Retry failed jobs
+
+### 💡 Example: Send with 5-Second Delay
+
+```bash
+curl -X POST http://localhost:3000/api/whatsapp/chats/send-text \
+  -H "X-Api-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "mysession",
+    "chatId": "628123456789",
+    "message": "This message will arrive in 5 seconds",
+    "delay": 5000,
+    "priority": 1,
+    "attempts": 5
+  }'
+```
+
+### ⚠️ Important Notes
+
+- **Immediate Response**: Jobs are queued and return immediately with a `jobId`. The actual delivery happens asynchronously.
+- **Redis Required**: Message queueing requires Redis to be running (default: `localhost:6379`).
+- **Job Persistence**: Jobs are stored in Redis. They persist across server restarts.
+- **Auto-Retry**: Failed messages automatically retry based on the `attempts` parameter.
+- **Audit Trail**: All jobs can be monitored and inspected via the Queue Monitor dashboard or API.
 
 ---
 
@@ -1443,34 +1639,122 @@ GET /api/websocket/stats
 ## 📁 Project Structure
 
 ```
-chatery_backend/
-├── index.js                 # Application entry point
-├── package.json
-├── .env                     # Environment variables
-├── README.md                # Documentation
-├── public/
-│   ├── dashboard.html       # Admin dashboard
-│   ├── websocket-test.html  # WebSocket test page
-│   └── media/               # Auto-saved media files
+chatery_whatsapp/
+├── index.js                         # Application entry point
+├── package.json                     # Project dependencies
+├── .env                             # Environment variables
+├── Dockerfile                       # Docker configuration
+├── docker-compose.yml               # Docker Compose setup
+├── README.md                        # Documentation
+├── LICENSE                          # MIT License
+│
+├── public/                          # Static files & UI
+│   ├── dashboard.html               # Admin dashboard interface
+│   ├── custom-header.html           # Custom header component
+│   ├── custom-footer.html           # Custom footer component
+│   ├── websocket-test.html          # WebSocket testing interface
+│   ├── dashboard-queues-proxy.html  # Queue monitor proxy (optional)
+│   └── media/                       # Auto-saved incoming media
 │       └── {sessionId}/
 │           └── {chatId}/
-├── sessions/                # Session authentication data
+│
+├── sessions/                        # Session data storage (auto-generated)
 │   └── {sessionId}/
-│       ├── creds.json
-│       └── store.json
-└── src/
-    ├── routes/
-    │   └── whatsapp.js      # API routes
-    └── services/
-        ├── websocket/
-        │   └── WebSocketManager.js
-        └── whatsapp/
-            ├── index.js
-            ├── WhatsAppManager.js
-            ├── WhatsAppSession.js
-            ├── BaileysStore.js
-            └── MessageFormatter.js
+│
+├── screenshot/                      # Documentation screenshots
+│
+└── src/                             # Source code
+    ├── config/                      # Configuration & API docs
+    │   ├── swagger.js               # Swagger main config
+    │   └── swagger-paths.js         # Swagger API endpoint definitions
+    │
+    ├── helpers/                     # Configuration & API docs
+    │   └── whatsappHelpers.js       # Swagger main config
+    │
+    ├── middleware/                  # Express middleware
+    │   └── apiKeyAuth.js            # API key authentication
+    │
+    ├── routes/                      # API route handlers
+    │   └── whatsapp.js              # WhatsApp API endpoints
+    │
+    ├── helpers/                     # Utility functions
+    │   └── whatsappHelpers.js       # Delay, validation, job helpers
+    │
+    └── services/                    # Business logic layer
+        ├── queues/                  # Message queue system (BullMQ + Redis)
+        │   ├── index.js             # Queue initialization
+        │   ├── worker.js            # Message processing worker
+        │   └── monitor.js           # Bull Board monitor UI
+        │
+        ├── websocket/               # Real-time WebSocket management
+        │   ├── WebSocketManager.js  # Socket.IO connection handler
+        │   └── events.js            # WebSocket event definitions
+        │
+        └── whatsapp/                # WhatsApp client management
+            ├── index.js             # WhatsApp service exports
+            ├── WhatsAppManager.js   # Multi-session manager
+            ├── WhatsAppSession.js   # Individual session handler
+            ├── BaileysStore.js      # Message store for Baileys library
+            └── MessageFormatter.js  # Message formatting utilities
 ```
+
+### Directory Reference
+
+| Directory                 | Purpose                                                       |
+| ------------------------- | ------------------------------------------------------------- |
+| `public/`                 | Static HTML files, custom components, and media storage       |
+| `sessions/`               | WhatsApp session credentials and state (auto-generated)       |
+| `src/config/`             | Swagger/OpenAPI documentation configuration                   |
+| `src/routes/`             | HTTP endpoint handlers and request routing                    |
+| `src/helpers/`            | Reusable utility and helper functions                         |
+| `src/services/`           | Core business logic and service layer                         |
+| `src/services/queues/`    | BullMQ queue system, worker processor, and Bull Board monitor |
+| `src/services/websocket/` | Socket.IO WebSocket management and event handling             |
+| `src/services/whatsapp/`  | Baileys WhatsApp client and session management                |
+
+### Architecture Overview
+
+**Message Sending Flow:**
+
+```
+Client Request
+    ↓
+HTTP Route Handler (src/routes/whatsapp.js)
+    ↓
+Validate & Enqueue Job (BullMQ)
+    ↓
+Redis Queue Storage
+    ↓
+Worker Processor (src/services/queues/worker.js)
+    ↓
+WhatsApp Service (src/services/whatsapp/)
+    ↓
+Baileys Client
+    ↓
+Send via WhatsApp
+    ↓
+Return Job Status to Client
+```
+
+**Real-time Event Flow:**
+
+```
+WhatsApp Event
+    ↓
+Baileys Handler
+    ↓
+WebSocket Service (src/services/websocket/)
+    ↓
+Socket.IO Broadcast
+    ↓
+Dashboard & Clients
+```
+
+**Job Monitoring:**
+
+- Queue Monitor: `http://localhost:3000/queue-monitor` (Bull Board UI)
+- Job Status API: `GET /api/whatsapp/jobs/:jobId`
+- Queue Stats: `GET /api/whatsapp/queue/stats` (optional endpoint)
 
 ---
 

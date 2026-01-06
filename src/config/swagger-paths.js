@@ -579,8 +579,13 @@
  * /api/whatsapp/chats/send-button:
  *   post:
  *     tags: [Messaging]
- *     summary: Send button message
- *     description: Send a message with interactive buttons. Messages are queued for reliable delivery with optional delay.
+ *     summary: Send button message (DEPRECATED - uses Poll)
+ *     description: |
+ *       **Note:** WhatsApp deprecated button messages in 2022.
+ *       This endpoint now uses Poll as an alternative for interactive choices.
+ *       The buttons will be displayed as poll options.
+ *       
+ *       For actual button messages, you need WhatsApp Business API (Cloud API).
  *     requestBody:
  *       required: true
  *       content:
@@ -631,6 +636,66 @@
  *     responses:
  *       200:
  *         description: Button message sent
+ */
+
+/**
+ * @swagger
+ * /api/whatsapp/chats/send-poll:
+ *   post:
+ *     tags: [Messaging]
+ *     summary: Send poll message
+ *     description: Send a poll/survey message with multiple options. Messages are queued for reliable delivery with optional delay.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [sessionId, chatId, question, options]
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *               chatId:
+ *                 type: string
+ *               question:
+ *                 type: string
+ *                 example: "What is your favorite color?"
+ *               options:
+ *                 type: array
+ *                 minItems: 2
+ *                 maxItems: 12
+ *                 items:
+ *                   type: string
+ *                 example: ["Red", "Blue", "Green"]
+ *               selectableCount:
+ *                 type: integer
+ *                 default: 1
+ *                 description: Number of options that can be selected (1-n)
+ *               typingTime:
+ *                 type: integer
+ *                 default: 0
+ *               delay:
+ *                 type: string|integer
+ *                 default: auto
+ *                 example: auto
+ *                 description: "Delay before sending - 'auto' for random 1-15s, numeric for milliseconds, 0 for immediate"
+ *               priority:
+ *                 type: integer
+ *                 description: Job priority (higher = more urgent, optional)
+ *               attempts:
+ *                 type: integer
+ *                 description: Number of retry attempts if job fails (optional)
+ *               skipNumberCheck:
+ *                 type: boolean
+ *                 default: true
+ *                 description: Skip WhatsApp number registration check
+ *               replyTo:
+ *                 type: string
+ *                 example: "3EB0B430A2B52B67D0"
+ *                 description: Message ID to reply to (optional)
+ *     responses:
+ *       202:
+ *         description: Poll message queued
  */
 
 /**
@@ -1672,6 +1737,69 @@
  * @swagger
  * components:
  *   schemas:
+ *     MessageQueueParams:
+ *       type: object
+ *       description: Common message queue and delay parameters for all send-* endpoints
+ *       properties:
+ *         delay:
+ *           type: string|integer
+ *           default: auto
+ *           example: auto
+ *           description: |
+ *             Delay before sending the message:
+ *             - 'auto' (default): Random delay between 1-15 seconds
+ *             - 0: Send immediately without delay
+ *             - {milliseconds}: Custom delay in milliseconds (e.g., 5000 for 5 seconds)
+ *         priority:
+ *           type: integer
+ *           default: 0
+ *           example: 0
+ *           description: Job priority (higher number = more urgent). Default is 0
+ *         attempts:
+ *           type: integer
+ *           default: 3
+ *           example: 3
+ *           description: Number of retry attempts if message delivery fails. Default is 3
+ *         skipNumberCheck:
+ *           type: boolean
+ *           default: false
+ *           example: false
+ *           description: Skip WhatsApp number registration validation before queueing
+ *     
+ *     JobResponse:
+ *       type: object
+ *       description: Response from a message queuing operation
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Message queued for delivery
+ *         data:
+ *           type: object
+ *           properties:
+ *             sessionId:
+ *               type: string
+ *             chatId:
+ *               type: string
+ *             jobId:
+ *               type: string
+ *               description: Unique job identifier for tracking delivery status
+ *             status:
+ *               type: string
+ *               enum: [queued, active, delayed, completed, failed]
+ *             delay:
+ *               type: integer
+ *               description: Actual delay in milliseconds
+ *             priority:
+ *               type: integer
+ *             attempts:
+ *               type: integer
+ *             estimatedDeliveryTime:
+ *               type: string
+ *               format: date-time
+ *     
  *     WebSocketEvent:
  *       type: object
  *       description: WebSocket event payload structure
