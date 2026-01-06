@@ -16,7 +16,6 @@ const whatsappRoutes = require('./src/routes/whatsapp');
 // Import Middleware
 const apiKeyAuth = require('./src/middleware/apiKeyAuth');
 const cookieParser = require('cookie-parser');
-const dashboardAuth = require('./src/middleware/dashboardAuth');
 
 // Import WebSocket Manager
 const wsManager = require('./src/services/websocket/WebSocketManager');
@@ -40,11 +39,6 @@ app.use('/media', express.static(path.join(__dirname, 'public', 'media')));
 // Serve Dashboard
 app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
-});
-
-// Dashboard proxy page to load Queues UI with API key header
-app.get('/dashboard/queue-monitor', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'dashboard-queues-proxy.html'));
 });
 
 // Serve WebSocket test page
@@ -137,7 +131,7 @@ app.use('/api/whatsapp', apiKeyAuth, whatsappRoutes);
 // Bull Board monitoring UI for queues (protected by dashboard session cookie or API key)
 try {
     const queuesMonitor = require('./src/services/queues/monitor');
-    app.use('/queue-monitor', dashboardAuth, queuesMonitor);
+    app.use('/queue-monitor', queuesMonitor);
 } catch (err) {
     console.warn('Bull Board monitor not available:', err.message);
 }

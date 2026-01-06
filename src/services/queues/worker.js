@@ -34,7 +34,7 @@ const scheduler = new QueueScheduler(QUEUE_NAME, { connection });
 // Worker processes jobs
 const worker = new Worker(
     QUEUE_NAME,
-    async job => {
+    async (job, token) => {
         const { name, data } = job;
 
         // Common: get session by id
