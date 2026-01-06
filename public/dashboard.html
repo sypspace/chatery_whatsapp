@@ -1272,13 +1272,6 @@
                     sessionStorage.setItem('dashboard_auth', 'authenticated');
                     isAuthenticated = true;
 
-                    // Ask for API key (optional)
-                    const inputApiKey = prompt('🔑 API Key (optional - leave blank if not configured):');
-                    if (inputApiKey && inputApiKey.trim()) {
-                        apiKey = inputApiKey.trim();
-                        sessionStorage.setItem('api_key', apiKey);
-                    }
-
                     alert('✅ Login successful! Welcome to Chatery Dashboard.');
                     return true;
                 } else {
