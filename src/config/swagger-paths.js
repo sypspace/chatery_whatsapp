@@ -579,8 +579,13 @@
  * /api/whatsapp/chats/send-button:
  *   post:
  *     tags: [Messaging]
- *     summary: Send button message
- *     description: Send a message with interactive buttons. Messages are queued for reliable delivery with optional delay.
+ *     summary: Send button message (DEPRECATED - uses Poll)
+ *     description: |
+ *       **Note:** WhatsApp deprecated button messages in 2022.
+ *       This endpoint now uses Poll as an alternative for interactive choices.
+ *       The buttons will be displayed as poll options.
+ *       
+ *       For actual button messages, you need WhatsApp Business API (Cloud API).
  *     requestBody:
  *       required: true
  *       content:

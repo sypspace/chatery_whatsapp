@@ -474,13 +474,17 @@ POST /chats/send-text
 }
 ```
 
-| Parameter    | Type   | Description                                                 |
-| ------------ | ------ | ----------------------------------------------------------- |
-| `sessionId`  | string | Required. Session ID                                        |
-| `chatId`     | string | Required. Phone number (628xxx) or group ID (xxx@g.us)      |
-| `message`    | string | Required. Text message to send                              |
-| `typingTime` | number | Optional. Typing duration in ms before sending (default: 0) |
-| `replyTo`    | string | Optional. Message ID to reply to                            |
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number (628xxx) or group ID (xxx@g.us)                          |
+| `message`         | string     | Required. Text message to send                                                  |
+| `typingTime`      | number     | Optional. Typing indicator duration in ms (default: 0)                          |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: false)                      |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
 
 #### Send Image
 
@@ -501,14 +505,18 @@ POST /chats/send-image
 }
 ```
 
-| Parameter    | Type   | Description                                  |
-| ------------ | ------ | -------------------------------------------- |
-| `sessionId`  | string | Required. Session ID                         |
-| `chatId`     | string | Required. Phone number or group ID           |
-| `imageUrl`   | string | Required. Direct URL to image file           |
-| `caption`    | string | Optional. Image caption                      |
-| `typingTime` | number | Optional. Typing duration in ms (default: 0) |
-| `replyTo`    | string | Optional. Message ID to reply to             |
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number or group ID                                              |
+| `imageUrl`        | string     | Required. Direct URL to image file                                              |
+| `caption`         | string     | Optional. Image caption                                                         |
+| `typingTime`      | number     | Optional. Typing duration in ms (default: 0)                                    |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: false)                      |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
 
 #### Send Document
 
@@ -530,15 +538,19 @@ POST /chats/send-document
 }
 ```
 
-| Parameter     | Type   | Description                                    |
-| ------------- | ------ | ---------------------------------------------- |
-| `sessionId`   | string | Required. Session ID                           |
-| `chatId`      | string | Required. Phone number or group ID             |
-| `documentUrl` | string | Required. Direct URL to document               |
-| `filename`    | string | Required. Filename to display                  |
-| `mimetype`    | string | Optional. MIME type (default: application/pdf) |
-| `typingTime`  | number | Optional. Typing duration in ms (default: 0)   |
-| `replyTo`     | string | Optional. Message ID to reply to               |
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number or group ID                                              |
+| `documentUrl`     | string     | Required. Direct URL to document                                                |
+| `filename`        | string     | Required. Filename to display                                                   |
+| `mimetype`        | string     | Optional. MIME type (default: application/pdf)                                  |
+| `typingTime`      | number     | Optional. Typing duration in ms (default: 0)                                    |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: false)                      |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
 
 #### Send Location
 
@@ -560,15 +572,19 @@ POST /chats/send-location
 }
 ```
 
-| Parameter    | Type   | Description                                  |
-| ------------ | ------ | -------------------------------------------- |
-| `sessionId`  | string | Required. Session ID                         |
-| `chatId`     | string | Required. Phone number or group ID           |
-| `latitude`   | number | Required. GPS latitude                       |
-| `longitude`  | number | Required. GPS longitude                      |
-| `name`       | string | Optional. Location name                      |
-| `typingTime` | number | Optional. Typing duration in ms (default: 0) |
-| `replyTo`    | string | Optional. Message ID to reply to             |
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number or group ID                                              |
+| `latitude`        | number     | Required. GPS latitude                                                          |
+| `longitude`       | number     | Required. GPS longitude                                                         |
+| `name`            | string     | Optional. Location name                                                         |
+| `typingTime`      | number     | Optional. Typing duration in ms (default: 0)                                    |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: false)                      |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
 
 #### Send Contact
 
@@ -589,20 +605,60 @@ POST /chats/send-contact
 }
 ```
 
-| Parameter      | Type   | Description                                  |
-| -------------- | ------ | -------------------------------------------- |
-| `sessionId`    | string | Required. Session ID                         |
-| `chatId`       | string | Required. Phone number or group ID           |
-| `contactName`  | string | Required. Contact display name               |
-| `contactPhone` | string | Required. Contact phone number               |
-| `typingTime`   | number | Optional. Typing duration in ms (default: 0) |
-| `replyTo`      | string | Optional. Message ID to reply to             |
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number or group ID                                              |
+| `contactName`     | string     | Required. Contact display name                                                  |
+| `contactPhone`    | string     | Required. Contact phone number                                                  |
+| `typingTime`      | number     | Optional. Typing duration in ms (default: 0)                                    |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: false)                      |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
 
-#### Send Button Message
+#### Send Poll Message
+
+```http
+POST /chats/send-poll
+```
+
+**Body:**
+
+```json
+{
+  "sessionId": "mysession",
+  "chatId": "628123456789",
+  "question": "What is your favorite color?",
+  "options": ["Red", "Blue", "Green", "Yellow"],
+  "selectableCount": 1,
+  "typingTime": 2000,
+  "replyTo": null
+}
+```
+
+| Parameter         | Type       | Description                                                                     |
+| ----------------- | ---------- | ------------------------------------------------------------------------------- |
+| `sessionId`       | string     | Required. Session ID                                                            |
+| `chatId`          | string     | Required. Phone number or group ID                                              |
+| `question`        | string     | Required. Poll question                                                         |
+| `options`         | array      | Required. Array of options (2-12 items)                                         |
+| `selectableCount` | number     | Optional. Number of selectable options (default: 1)                             |
+| `typingTime`      | number     | Optional. Typing duration in ms (default: 0)                                    |
+| `delay`           | string/int | Optional. Delay before sending: `"auto"` (1-15s random), `0` (immediate), or ms |
+| `priority`        | number     | Optional. Job priority (higher = more urgent, default: 0)                       |
+| `attempts`        | number     | Optional. Retry attempts on failure (default: 3)                                |
+| `skipNumberCheck` | boolean    | Optional. Skip WhatsApp number validation (default: true)                       |
+| `replyTo`         | string     | Optional. Message ID to reply to                                                |
+
+#### Send Button Message (DEPRECATED)
 
 ```http
 POST /chats/send-button
 ```
+
+> ⚠️ **Note:** WhatsApp deprecated button messages in 2022. This endpoint now uses **Poll** as an alternative. For actual interactive buttons, you need WhatsApp Business API (Cloud API).
 
 **Body:**
 
@@ -618,15 +674,15 @@ POST /chats/send-button
 }
 ```
 
-| Parameter    | Type   | Description                                  |
-| ------------ | ------ | -------------------------------------------- |
-| `sessionId`  | string | Required. Session ID                         |
-| `chatId`     | string | Required. Phone number or group ID           |
-| `text`       | string | Required. Button message text                |
-| `footer`     | string | Optional. Footer text                        |
-| `buttons`    | array  | Required. Array of button labels (max 3)     |
-| `typingTime` | number | Optional. Typing duration in ms (default: 0) |
-| `replyTo`    | string | Optional. Message ID to reply to             |
+| Parameter    | Type   | Description                                    |
+| ------------ | ------ | ---------------------------------------------- |
+| `sessionId`  | string | Required. Session ID                           |
+| `chatId`     | string | Required. Phone number or group ID             |
+| `text`       | string | Required. Poll question (combined with footer) |
+| `footer`     | string | Optional. Additional text                      |
+| `buttons`    | array  | Required. Array of options (poll choices)      |
+| `typingTime` | number | Optional. Typing duration in ms (default: 0)   |
+| `replyTo`    | string | Optional. Message ID to reply to               |
 
 #### Send Presence Update
 
