@@ -1272,6 +1272,12 @@
                     sessionStorage.setItem('dashboard_auth', 'authenticated');
                     isAuthenticated = true;
 
+                    if (apiKey) {
+                        sessionStorage.setItem('api_key', apiKey);
+                        // also persist to localStorage so new windows can read it
+                        localStorage.setItem('api_key', apiKey);
+                    }
+
                     alert('✅ Login successful! Welcome to Chatery Dashboard.');
                     return true;
                 } else {
