@@ -1271,7 +1271,8 @@
                 if (data.success) {
                     sessionStorage.setItem('dashboard_auth', 'authenticated');
                     isAuthenticated = true;
-
+                    apiKey = data.metadata.api_key || '';
+                    
                     if (apiKey) {
                         sessionStorage.setItem('api_key', apiKey);
                         // also persist to localStorage so new windows can read it
