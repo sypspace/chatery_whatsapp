@@ -14,8 +14,9 @@ A powerful WhatsApp API backend built with Express.js and Baileys library. Suppo
 - 📱 **Multi-Session Support** - Manage multiple WhatsApp accounts simultaneously
 - 🔌 **Real-time WebSocket** - Get instant notifications for messages, status updates, and more
 - 👥 **Group Management** - Create, manage, and control WhatsApp groups
-- 📨 **Send Messages** - Text, images, documents, locations, contacts, and buttons
+- 📨 **Send Messages** - Text, images, documents, locations, contacts, and more
 - ↩️ **Reply to Messages** - Reply/quote specific messages with replyTo parameter
+- 📊 **Poll Messages** - Send interactive polls with single or multiple choice
 - 📤 **Bulk Messaging** - Send messages to multiple recipients with background processing
 - 📥 **Auto-Save Media** - Automatically save incoming media to server
 - 💾 **Persistent Store** - Message history with optimized caching
@@ -479,7 +480,7 @@ POST /chats/send-text
 | `chatId`     | string | Required. Phone number (628xxx) or group ID (xxx@g.us)      |
 | `message`    | string | Required. Text message to send                              |
 | `typingTime` | number | Optional. Typing duration in ms before sending (default: 0) |
-| `replyTo` | string | Optional. Message ID to reply to |
+| `replyTo`    | string | Optional. Message ID to reply to                            |
 
 #### Send Image
 
@@ -507,7 +508,7 @@ POST /chats/send-image
 | `imageUrl`   | string | Required. Direct URL to image file           |
 | `caption`    | string | Optional. Image caption                      |
 | `typingTime` | number | Optional. Typing duration in ms (default: 0) |
-| `replyTo` | string | Optional. Message ID to reply to |
+| `replyTo`    | string | Optional. Message ID to reply to             |
 
 #### Send Document
 
@@ -529,15 +530,15 @@ POST /chats/send-document
 }
 ```
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `sessionId` | string | Required. Session ID |
-| `chatId` | string | Required. Phone number or group ID |
-| `documentUrl` | string | Required. Direct URL to document |
-| `filename` | string | Required. Filename to display |
-| `mimetype` | string | Optional. MIME type (default: application/pdf) |
-| `typingTime` | number | Optional. Typing duration in ms (default: 0) |
-| `replyTo` | string | Optional. Message ID to reply to |
+| Parameter     | Type   | Description                                    |
+| ------------- | ------ | ---------------------------------------------- |
+| `sessionId`   | string | Required. Session ID                           |
+| `chatId`      | string | Required. Phone number or group ID             |
+| `documentUrl` | string | Required. Direct URL to document               |
+| `filename`    | string | Required. Filename to display                  |
+| `mimetype`    | string | Optional. MIME type (default: application/pdf) |
+| `typingTime`  | number | Optional. Typing duration in ms (default: 0)   |
+| `replyTo`     | string | Optional. Message ID to reply to               |
 
 #### Send Location
 
@@ -567,7 +568,7 @@ POST /chats/send-location
 | `longitude`  | number | Required. GPS longitude                      |
 | `name`       | string | Optional. Location name                      |
 | `typingTime` | number | Optional. Typing duration in ms (default: 0) |
-| `replyTo` | string | Optional. Message ID to reply to |
+| `replyTo`    | string | Optional. Message ID to reply to             |
 
 #### Send Contact
 
@@ -588,14 +589,14 @@ POST /chats/send-contact
 }
 ```
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `sessionId` | string | Required. Session ID |
-| `chatId` | string | Required. Phone number or group ID |
-| `contactName` | string | Required. Contact display name |
-| `contactPhone` | string | Required. Contact phone number |
-| `typingTime` | number | Optional. Typing duration in ms (default: 0) |
-| `replyTo` | string | Optional. Message ID to reply to |
+| Parameter      | Type   | Description                                  |
+| -------------- | ------ | -------------------------------------------- |
+| `sessionId`    | string | Required. Session ID                         |
+| `chatId`       | string | Required. Phone number or group ID           |
+| `contactName`  | string | Required. Contact display name               |
+| `contactPhone` | string | Required. Contact phone number               |
+| `typingTime`   | number | Optional. Typing duration in ms (default: 0) |
+| `replyTo`      | string | Optional. Message ID to reply to             |
 
 #### Send Button Message
 
@@ -625,7 +626,7 @@ POST /chats/send-button
 | `footer`     | string | Optional. Footer text                        |
 | `buttons`    | array  | Required. Array of button labels (max 3)     |
 | `typingTime` | number | Optional. Typing duration in ms (default: 0) |
-| `replyTo` | string | Optional. Message ID to reply to |
+| `replyTo`    | string | Optional. Message ID to reply to             |
 
 #### Send Presence Update
 
