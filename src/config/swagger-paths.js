@@ -635,6 +635,66 @@
 
 /**
  * @swagger
+ * /api/whatsapp/chats/send-poll:
+ *   post:
+ *     tags: [Messaging]
+ *     summary: Send poll message
+ *     description: Send a poll/survey message with multiple options. Messages are queued for reliable delivery with optional delay.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [sessionId, chatId, question, options]
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *               chatId:
+ *                 type: string
+ *               question:
+ *                 type: string
+ *                 example: "What is your favorite color?"
+ *               options:
+ *                 type: array
+ *                 minItems: 2
+ *                 maxItems: 12
+ *                 items:
+ *                   type: string
+ *                 example: ["Red", "Blue", "Green"]
+ *               selectableCount:
+ *                 type: integer
+ *                 default: 1
+ *                 description: Number of options that can be selected (1-n)
+ *               typingTime:
+ *                 type: integer
+ *                 default: 0
+ *               delay:
+ *                 type: string|integer
+ *                 default: auto
+ *                 example: auto
+ *                 description: "Delay before sending - 'auto' for random 1-15s, numeric for milliseconds, 0 for immediate"
+ *               priority:
+ *                 type: integer
+ *                 description: Job priority (higher = more urgent, optional)
+ *               attempts:
+ *                 type: integer
+ *                 description: Number of retry attempts if job fails (optional)
+ *               skipNumberCheck:
+ *                 type: boolean
+ *                 default: true
+ *                 description: Skip WhatsApp number registration check
+ *               replyTo:
+ *                 type: string
+ *                 example: "3EB0B430A2B52B67D0"
+ *                 description: Message ID to reply to (optional)
+ *     responses:
+ *       202:
+ *         description: Poll message queued
+ */
+
+/**
+ * @swagger
  * /api/whatsapp/chats/bulk-status/{jobId}:
  *   get:
  *     tags: [Bulk Messaging]
