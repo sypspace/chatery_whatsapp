@@ -682,6 +682,130 @@ POST /chats/profile-picture
 
 ---
 
+## 📊 Message Queue & Delay Control
+
+All `send-*` endpoints support optional delay and queue parameters for reliable, scheduled message delivery.
+
+### ⏱️ Delay Options
+
+The `delay` parameter controls when a message is sent:
+
+| Value            | Behavior                            | Example         |
+| ---------------- | ----------------------------------- | --------------- |
+| `"auto"`         | Random delay 1-15 seconds (default) | `delay: "auto"` |
+| `0`              | Send immediately without delay      | `delay: 0`      |
+| `{milliseconds}` | Custom delay in milliseconds        | `delay: 5000`   |
+
+### 📋 Queue Parameters
+
+When sending a message, include these parameters to control queueing:
+
+```json
+{
+  "sessionId": "mysession",
+  "chatId": "628123456789",
+  "message": "Hello!",
+  "delay": "auto",
+  "priority": 0,
+  "attempts": 3,
+  "skipNumberCheck": false
+}
+```
+
+| Parameter         | Type           | Description                                                  |
+| ----------------- | -------------- | ------------------------------------------------------------ |
+| `delay`           | string\|number | Optional. `"auto"`, `0`, or milliseconds (default: `"auto"`) |
+| `priority`        | number         | Optional. Job priority (higher = more urgent, default: 0)    |
+| `attempts`        | number         | Optional. Retry attempts if delivery fails (default: 3)      |
+| `skipNumberCheck` | boolean        | Optional. Skip WhatsApp number validation (default: false)   |
+
+### 🔄 Job Response
+
+When you send a message with queueing, the API returns immediately with a job ID:
+
+```json
+{
+  "success": true,
+  "message": "Message queued for delivery",
+  "data": {
+    "sessionId": "mysession",
+    "chatId": "628123456789",
+    "jobId": "msg_1234567890_abc123def",
+    "status": "queued",
+    "delay": 5000,
+    "priority": 0,
+    "attempts": 3,
+    "estimatedDeliveryTime": "2024-01-06T10:30:15.000Z"
+  }
+}
+```
+
+### 📍 Check Job Status
+
+Use the job ID to check delivery status:
+
+```http
+GET /jobs/:jobId
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "jobId": "msg_1234567890_abc123def",
+    "status": "completed",
+    "progress": 100,
+    "data": {
+      "sessionId": "mysession",
+      "chatId": "628123456789"
+    },
+    "result": {
+      "key": "3EB0B430A2B52B67D0",
+      "status": "delivered"
+    },
+    "failedReason": null,
+    "timestamp": "2024-01-06T10:30:15.000Z"
+  }
+}
+```
+
+### 📈 Monitor Queue Activity
+
+Access the Queue Monitor dashboard at `http://localhost:3000/queue-monitor` to:
+
+- View real-time queue statistics
+- Monitor active, completed, and failed jobs
+- Inspect job details and error messages
+- Retry failed jobs
+
+### 💡 Example: Send with 5-Second Delay
+
+```bash
+curl -X POST http://localhost:3000/api/whatsapp/chats/send-text \
+  -H "X-Api-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "mysession",
+    "chatId": "628123456789",
+    "message": "This message will arrive in 5 seconds",
+    "delay": 5000,
+    "priority": 1,
+    "attempts": 5
+  }'
+```
+
+### ⚠️ Important Notes
+
+- **Immediate Response**: Jobs are queued and return immediately with a `jobId`. The actual delivery happens asynchronously.
+- **Redis Required**: Message queueing requires Redis to be running (default: `localhost:6379`).
+- **Job Persistence**: Jobs are stored in Redis. They persist across server restarts.
+- **Auto-Retry**: Failed messages automatically retry based on the `attempts` parameter.
+- **Audit Trail**: All jobs can be monitored and inspected via the Queue Monitor dashboard or API.
+
+---
+
 ### Bulk Messaging (Background Jobs)
 
 Bulk messaging runs in the background and returns immediately with a job ID. You can track progress using the status endpoint.
