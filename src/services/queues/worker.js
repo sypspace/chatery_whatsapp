@@ -61,7 +61,7 @@ const worker = new Worker(
                         const ok = await checkNumberRegistered(session, data.chatId);
                         if (!ok) throw new UnrecoverableError('Phone number is not registered on WhatsApp');
                     }
-                    return await session.sendDocument(data.chatId, data.documentUrl, data.filename, data.mimetype, data.typingTime || 0);
+                    return await session.sendDocument(data.chatId, data.documentUrl, data.filename, data.mimetype, data.caption, data.typingTime || 0);
                 }
                 case 'send-location': {
                     if (!data.skipNumberCheck) {

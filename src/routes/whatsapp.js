@@ -424,9 +424,7 @@ router.post('/chats/send-image', checkSession, async (req, res) => {
 // Send document (enqueue)
 router.post('/chats/send-document', checkSession, async (req, res) => {
     try {
-        const { chatId, documentUrl, filename, mimetype, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = true } = req.body;
-
-        const { chatId, documentUrl, filename, mimetype, caption = '', typingTime = 0, replyTo = null } = req.body;
+        const { chatId, documentUrl, filename, mimetype, caption = '', typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = true } = req.body;
         
         if (!chatId || !documentUrl || !filename) {
             return res.status(400).json({ success: false, message: 'Missing required fields: chatId, documentUrl, filename' });
@@ -443,6 +441,7 @@ router.post('/chats/send-document', checkSession, async (req, res) => {
             documentUrl,
             filename,
             mimetype,
+            caption,
             typingTime,
             replyTo
         };
