@@ -881,7 +881,9 @@
                                     <option value="GET|/api/whatsapp/sessions/{sessionId}/status">GET
                                         /sessions/:sessionId/status - Get session status</option>
                                     <option value="GET|/api/whatsapp/sessions/{sessionId}/qr">GET
-                                        /sessions/:sessionId/qr - Get QR code</option>
+                                        /sessions/:sessionId/qr - Get QR code (JSON)</option>
+                                    <option value="GET|/api/whatsapp/sessions/{sessionId}/qr/image">GET
+                                        /sessions/:sessionId/qr/image - Get QR code (PNG Image)</option>
                                     <option value="POST|/api/whatsapp/sessions/{sessionId}/connect">POST
                                         /sessions/:sessionId/connect - Connect session</option>
                                     <option value="PATCH|/api/whatsapp/sessions/{sessionId}/config">PATCH
@@ -900,14 +902,16 @@
                                         image</option>
                                     <option value="POST|/api/whatsapp/chats/send-document">POST /chats/send-document -
                                         Send document</option>
+                                    <option value="POST|/api/whatsapp/chats/send-audio">POST /chats/send-audio - Send
+                                        audio/voice note</option>
                                     <option value="POST|/api/whatsapp/chats/send-location">POST /chats/send-location -
                                         Send location</option>
                                     <option value="POST|/api/whatsapp/chats/send-contact">POST /chats/send-contact -
                                         Send contact</option>
-                                    <option value="POST|/api/whatsapp/chats/send-button">POST /chats/send-button - Send
-                                        button (uses Poll)</option>
                                     <option value="POST|/api/whatsapp/chats/send-poll">POST /chats/send-poll - Send
                                         poll message</option>
+                                    <option value="POST|/api/whatsapp/chats/send-button">POST /chats/send-button - Send
+                                        button (⚠️ deprecated, uses Poll)</option>
                                     <option value="POST|/api/whatsapp/chats/presence">POST /chats/presence - Send typing
                                         indicator</option>
                                     <option value="POST|/api/whatsapp/chats/check-number">POST /chats/check-number -
@@ -1689,8 +1693,16 @@
             let helpText = '';
 
             // Sessions
-            if (path.includes('/sessions') && method === 'GET') {
+            if (path.includes('/sessions') && method === 'GET' && !path.includes('/qr/image')) {
                 showBody = false;
+                if (path.includes('/qr')) {
+                    helpText = '📱 Get QR code as base64 string in JSON format.';
+                } else if (path.includes('/status')) {
+                    helpText = '📊 Get current session connection status.';
+                }
+            } else if (path.includes('/sessions') && path.includes('/qr/image') && method === 'GET') {
+                showBody = false;
+                helpText = '🖼️ Get QR code as PNG image. Opens in new tab for easy scanning.';
             } else if (path.includes('/sessions') && path.includes('/webhooks') && method === 'POST') {
                 body = {
                     url: 'https://your-server.com/webhook',
@@ -1760,6 +1772,7 @@
                     documentUrl: 'https://example.com/document.pdf',
                     filename: 'document.pdf',
                     mimetype: 'application/pdf',
+                    caption: 'Document caption here',
                     typingTime: 0,
                     delay: 'auto',
                     priority: undefined,
@@ -1767,7 +1780,17 @@
                     skipNumberCheck: false,
                     replyTo: null
                 };
-                helpText = '📄 <code>documentUrl</code>: Direct URL to document.<br><code>filename</code>: Filename with extension.<br><code>mimetype</code>: MIME type (optional).<br><code>delay</code>: "auto" (random 1-15s), numeric milliseconds, or 0 (immediate).<br><code>priority</code>: Job priority (optional).<br><code>attempts</code>: Retry count (optional).<br><code>skipNumberCheck</code>: Skip WhatsApp registration check.<br><code>typingTime</code>: Typing indicator duration in ms.';
+                helpText = '📄 <code>caption</code>: Optional text caption. <code>mimetype</code>: MIME type. <code>replyTo</code>: Message ID to reply to (optional).';
+            } else if (path.includes('/chats/send-audio')) {
+                body = {
+                    sessionId: '',
+                    chatId: '628123456789',
+                    audioUrl: 'https://example.com/audio.ogg',
+                    ptt: true,
+                    typingTime: 0,
+                    replyTo: null
+                };
+                helpText = '🎵 <b>OGG format required!</b> <code>audioUrl</code>: Direct URL to .ogg audio file. <code>ptt</code>: true = voice note, false = audio file. Convert: <code>ffmpeg -i input.mp3 -c:a libopus output.ogg</code>';
             } else if (path.includes('/chats/send-location')) {
                 body = {
                     sessionId: '',
@@ -1796,7 +1819,7 @@
                     skipNumberCheck: false,
                     replyTo: null
                 };
-                helpText = '👤 <code>contactName</code>: Contact name.<br><code>contactPhone</code>: Contact phone number.<br><code>delay</code>: "auto" (random 1-15s), numeric milliseconds, or 0 (immediate).<br><code>priority</code>: Job priority (optional).<br><code>attempts</code>: Retry count (optional).<br><code>skipNumberCheck</code>: Skip WhatsApp registration check.<br><code>typingTime</code>: Typing indicator duration in ms.';
+                helpText = '👤 <code>contactPhone</code>: Contact phone number. <code>replyTo</code>: Message ID to reply to (optional).';
             } else if (path.includes('/chats/send-poll')) {
                 body = {
                     sessionId: '',
@@ -1822,7 +1845,7 @@
                     skipNumberCheck: false,
                     replyTo: null
                 };
-                helpText = '🔘 <code>text</code>: Button message text.<br><code>buttons</code>: Max 3 button labels (array).<br><code>footer</code>: Optional footer text.<br><code>delay</code>: "auto" (random 1-15s), numeric milliseconds, or 0 (immediate).<br><code>priority</code>: Job priority (optional).<br><code>attempts</code>: Retry count (optional).<br><code>skipNumberCheck</code>: Skip WhatsApp registration check.<br><code>typingTime</code>: Typing indicator duration in ms.';
+                helpText = '⚠️ <b>DEPRECATED:</b> Buttons deprecated by WhatsApp. This now sends a Poll instead. Use <code>/send-poll</code> for better control.';
             } else if (path.includes('/chats/presence')) {
                 body = {
                     sessionId: '',
@@ -1932,10 +1955,9 @@
             } else if (path.includes('/chats/mark-read')) {
                 body = {
                     sessionId: '',
-                    chatId: '628123456789',
-                    messageId: null
+                    chatId: '628123456789'
                 };
-                helpText = '✅ Mark a chat as read. <code>messageId</code>: (optional) Specific message ID to mark as read.';
+                helpText = '✅ Mark all unread messages in a chat as read. Works for both personal and group chats.<br><code>chatId</code>: Phone number or group ID.<br>⚠️ Note: Only messages received after server start can be marked as read.';
             }
             // Groups - Basic
             else if (path === 'POST|/api/whatsapp/groups' || path.endsWith('/groups')) {
@@ -2101,12 +2123,30 @@
             responseBox.textContent = 'Loading...';
 
             try {
+                // Special handling for QR image endpoint - open in new tab
+                if (path.includes('/qr/image')) {
+                    window.open(path, '_blank');
+                    responseBox.textContent = 'QR Image opened in new tab. Scan the QR code with your WhatsApp app.';
+                    showToast('success', 'QR Image opened in new tab');
+                    return;
+                }
+
                 const options = {
                     method: method,
                     headers: getApiHeaders(true)
                 };
 
-                if (method !== 'GET' && method !== 'DELETE' && bodyText) {
+                // Special handling for DELETE webhooks - use query parameter
+                if (method === 'DELETE' && path.includes('/webhooks') && bodyText) {
+                    try {
+                        const bodyObj = JSON.parse(bodyText);
+                        if (bodyObj.url) {
+                            path = `${path}?url=${encodeURIComponent(bodyObj.url)}`;
+                        }
+                    } catch (e) {
+                        // Ignore JSON parse error
+                    }
+                } else if (method !== 'GET' && method !== 'DELETE' && bodyText) {
                     options.body = bodyText;
                 }
 
@@ -2230,7 +2270,7 @@
                                 ${wh.events && wh.events.length > 0 ? `Events: ${wh.events.join(', ')}` : 'All events'}
                             </div>
                         </div>
-                        <button class="btn btn-danger btn-icon" onclick="removeWebhook('${wh.url.replace(/'/g, "\\'")}')" title="Remove" style="margin-left: 8px;">
+                        <button class="btn btn-danger btn-icon" data-webhook-url="${encodeURIComponent(wh.url)}" onclick="removeWebhook(decodeURIComponent(this.dataset.webhookUrl))" title="Remove" style="margin-left: 8px;">
                             🗑️
                         </button>
                     </div>
@@ -2292,14 +2332,26 @@
         }
 
         async function removeWebhook(url) {
+            console.log('removeWebhook called with:', url);
+            
+            if (!url) {
+                showToast('error', 'Webhook URL is missing');
+                console.error('removeWebhook: url is undefined or empty');
+                return;
+            }
+            
             if (!confirm(`Remove webhook?\n${url}`)) {
                 return;
             }
 
             try {
-                const response = await apiFetch(`${API_BASE}/sessions/${currentWebhookSessionId}/webhooks`, {
-                    method: 'DELETE',
-                    body: JSON.stringify({ url })
+                // Use query parameter for DELETE (more reliable than body)
+                const encodedUrl = encodeURIComponent(url);
+                const fullUrl = `${API_BASE}/sessions/${currentWebhookSessionId}/webhooks?url=${encodedUrl}`;
+                console.log('DELETE request to:', fullUrl);
+                
+                const response = await apiFetch(fullUrl, {
+                    method: 'DELETE'
                 });
 
                 const result = await response.json();

@@ -16,7 +16,9 @@ router.get('/sessions', (req, res) => {
                 status: s.status,
                 isConnected: s.isConnected,
                 phoneNumber: s.phoneNumber,
-                name: s.name
+                name: s.name,
+                webhooks: s.webhooks || [],
+                metadata: s.metadata || {}
             }))
         });
     } catch (error) {
@@ -184,12 +186,12 @@ router.post('/sessions/:sessionId/webhooks', (req, res) => {
 router.delete('/sessions/:sessionId/webhooks', (req, res) => {
     try {
         const { sessionId } = req.params;
-        const { url } = req.body;
+        const url = req.body?.url || req.query?.url;
         
         if (!url) {
             return res.status(400).json({
                 success: false,
-                message: 'Missing required field: url'
+                message: 'Missing required field: url (provide in body or query parameter)'
             });
         }
         
@@ -424,6 +426,8 @@ router.post('/chats/send-document', checkSession, async (req, res) => {
     try {
         const { chatId, documentUrl, filename, mimetype, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = true } = req.body;
 
+        const { chatId, documentUrl, filename, mimetype, caption = '', typingTime = 0, replyTo = null } = req.body;
+        
         if (!chatId || !documentUrl || !filename) {
             return res.status(400).json({ success: false, message: 'Missing required fields: chatId, documentUrl, filename' });
         }
@@ -455,7 +459,38 @@ router.post('/chats/send-document', checkSession, async (req, res) => {
     }
 });
 
-// Send location (enqueue)
+// Send audio message (OGG format required)
+router.post('/chats/send-audio', checkSession, async (req, res) => {
+    try {
+        const { chatId, audioUrl, ptt = false, typingTime = 0, replyTo = null } = req.body;
+        
+        if (!chatId || !audioUrl) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields: chatId, audioUrl'
+            });
+        }
+
+        // Validate OGG format
+        const urlLower = audioUrl.toLowerCase();
+        if (!urlLower.endsWith('.ogg') && !urlLower.includes('.ogg?')) {
+            return res.status(400).json({
+                success: false,
+                message: 'Audio must be in OGG format (.ogg). WhatsApp only supports OGG audio files.'
+            });
+        }
+
+        const result = await req.session.sendAudio(chatId, audioUrl, ptt, typingTime, replyTo);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// Send location
 router.post('/chats/send-location', checkSession, async (req, res) => {
     try {
         const { chatId, latitude, longitude, name, typingTime = 0, replyTo = null, delay = 'auto', priority, attempts, skipNumberCheck = true } = req.body;
@@ -606,6 +641,35 @@ router.post('/chats/send-poll', checkSession, async (req, res) => {
         res.status(202).json({ success: true, message: 'Poll message queued', jobId: job.id });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Send poll message (alternative to buttons)
+router.post('/chats/send-poll', checkSession, async (req, res) => {
+    try {
+        const { chatId, question, options, selectableCount = 1, typingTime = 0, replyTo = null } = req.body;
+        
+        if (!chatId || !question || !options || !Array.isArray(options)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields: chatId, question, options (array)'
+            });
+        }
+
+        if (options.length < 2 || options.length > 12) {
+            return res.status(400).json({
+                success: false,
+                message: 'Poll must have between 2 and 12 options'
+            });
+        }
+
+        const result = await req.session.sendPoll(chatId, question, options, selectableCount, typingTime, replyTo);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 });
 
@@ -1186,12 +1250,15 @@ router.post('/chats/mark-read', checkSession, async (req, res) => {
             });
         }
         
-        const result = await req.session.markChatRead(chatId, messageId);
+        console.log(`[mark-read] chatId: ${chatId}, messageId: ${messageId || 'all'}`);
+        
+        const result = await req.session.markChatRead(chatId, messageId || null);
         res.json(result);
     } catch (error) {
+        console.error('[mark-read] Error:', error);
         res.status(500).json({
             success: false,
-            message: error.message
+            message: error.message || 'Internal Server Error'
         });
     }
 });

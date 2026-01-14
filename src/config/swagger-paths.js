@@ -422,6 +422,8 @@
  *     tags: [Messaging]
  *     summary: Send document
  *     description: Send a document/file. Messages are queued for reliable delivery with optional delay.
+ *     summary: Send document with caption
+ *     description: Send a document/file with optional caption. Optionally reply to a specific message.
  *     requestBody:
  *       required: true
  *       content:
@@ -443,6 +445,10 @@
  *               mimetype:
  *                 type: string
  *                 example: application/pdf
+ *               caption:
+ *                 type: string
+ *                 example: Here is the document you requested
+ *                 description: Optional caption for the document
  *               typingTime:
  *                 type: integer
  *               delay:
@@ -467,6 +473,55 @@
  *     responses:
  *       200:
  *         description: Document sent
+ */
+
+/**
+ * @swagger
+ * /api/whatsapp/chats/send-audio:
+ *   post:
+ *     tags: [Messaging]
+ *     summary: Send audio message (OGG only)
+ *     description: |
+ *       Send an audio file or voice note. Set ptt=true for voice note mode.
+ *       
+ *       **Important:** Audio must be in OGG format (.ogg). WhatsApp only supports OGG audio files with Opus codec.
+ *       
+ *       You can convert audio to OGG using FFmpeg:
+ *       ```
+ *       ffmpeg -i input.mp3 -c:a libopus output.ogg
+ *       ```
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [sessionId, chatId, audioUrl]
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *               chatId:
+ *                 type: string
+ *               audioUrl:
+ *                 type: string
+ *                 example: https://example.com/audio.ogg
+ *                 description: URL to OGG audio file (required format)
+ *               ptt:
+ *                 type: boolean
+ *                 default: false
+ *                 description: Push to talk mode (true = voice note, false = audio file)
+ *               typingTime:
+ *                 type: integer
+ *                 description: Recording simulation time in ms
+ *               replyTo:
+ *                 type: string
+ *                 example: "3EB0B430A2B52B67D0"
+ *                 description: Message ID to reply to (optional)
+ *     responses:
+ *       200:
+ *         description: Audio sent
+ *       400:
+ *         description: Invalid format - must be OGG
  */
 
 /**
@@ -606,12 +661,8 @@
  *               buttons:
  *                 type: array
  *                 items:
- *                   type: object
- *                   properties:
- *                     buttonId:
- *                       type: string
- *                     buttonText:
- *                       type: string
+ *                   type: string
+ *                 example: ["Option 1", "Option 2", "Option 3"]
  *               typingTime:
  *                 type: integer
  *               delay:
@@ -635,7 +686,7 @@
  *                 description: Message ID to reply to (optional)
  *     responses:
  *       200:
- *         description: Button message sent
+ *         description: Poll sent (as button alternative)
  */
 
 /**
@@ -1156,7 +1207,11 @@
  *   post:
  *     tags: [Chat History]
  *     summary: Mark chat as read
- *     description: Mark all messages in a chat as read
+ *     description: |
+ *       Mark all unread messages in a chat as read. Works for both private chats and group chats.
+ *       
+ *       **Note:** Only messages that were received after the server started can be marked as read
+ *       (messages must be in the in-memory store).
  *     requestBody:
  *       required: true
  *       content:
@@ -1167,14 +1222,38 @@
  *             properties:
  *               sessionId:
  *                 type: string
+ *                 example: mysession
  *               chatId:
  *                 type: string
- *               messageId:
- *                 type: string
- *                 description: Specific message to mark as read
+ *                 description: Chat ID (phone number or group ID)
+ *                 example: "628123456789"
  *     responses:
  *       200:
  *         description: Chat marked as read
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Chat marked as read
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     chatId:
+ *                       type: string
+ *                       example: "628123456789@s.whatsapp.net"
+ *                     isGroup:
+ *                       type: boolean
+ *                       example: false
+ *                     markedCount:
+ *                       type: integer
+ *                       description: Number of messages marked as read
+ *                       example: 5
  */
 
 /**
@@ -1737,6 +1816,52 @@
  * @swagger
  * components:
  *   schemas:
+ *     Session:
+ *       type: object
+ *       description: WhatsApp session information
+ *       properties:
+ *         sessionId:
+ *           type: string
+ *           description: Unique session identifier
+ *           example: mysession
+ *         status:
+ *           type: string
+ *           enum: [disconnected, connecting, qr_ready, connected]
+ *           description: Current session status
+ *           example: connected
+ *         isConnected:
+ *           type: boolean
+ *           description: Whether session is currently connected
+ *           example: true
+ *         phoneNumber:
+ *           type: string
+ *           description: Connected WhatsApp phone number
+ *           example: "628123456789"
+ *         name:
+ *           type: string
+ *           description: WhatsApp profile name
+ *           example: John Doe
+ *         webhooks:
+ *           type: array
+ *           description: Configured webhooks for this session
+ *           items:
+ *             type: object
+ *             properties:
+ *               url:
+ *                 type: string
+ *                 description: Webhook URL
+ *                 example: https://example.com/webhook
+ *               events:
+ *                 type: array
+ *                 description: Events to receive (empty = all events)
+ *                 items:
+ *                   type: string
+ *                 example: [message, message_ack]
+ *         metadata:
+ *           type: object
+ *           description: Custom metadata associated with this session
+ *           example: {"appName": "MyApp", "userId": "123"}
+ *
  *     MessageQueueParams:
  *       type: object
  *       description: Common message queue and delay parameters for all send-* endpoints
